@@ -200,6 +200,10 @@ body::after { content: ''; position: fixed; z-index: -1; inset: 0; pointer-event
 .energy-ribbons i:nth-child(1) { left: -18%; top: 24%; }.energy-ribbons i:nth-child(2) { right: -22%; top: 57%; transform: rotate(24deg) scale(.75); border-color: rgba(255,128,103,.14); animation-delay: -5s; }.energy-ribbons i:nth-child(3) { left: 12%; bottom: 7%; transform: rotate(-8deg) scale(.5); border-color: rgba(192,168,255,.13); animation-delay: -9s; }
 @keyframes ribbon-drift { 0%, 100% { margin-left: -3vw; opacity: .18; } 50% { margin-left: 9vw; opacity: .75; } }
 @media (max-width: 800px) { .energy-ribbons i { width: 120vw; height: 22vw; } }
+.hero-section { grid-template-columns: minmax(0, 760px); justify-content: center; text-align: center; }
+.hero-copy { max-width: 650px; margin: 0 auto; }
+.hero-intro { margin-left: auto; margin-right: auto; }
+.text-link { justify-content: center; }
 .prompt-flare { display: inline-block; animation: prompt-flare-in .45s cubic-bezier(.2,.8,.2,1) both; }
 .post-card { transform: perspective(900px) rotateX(var(--tilt-x, 0deg)) rotateY(var(--tilt-y, 0deg)); transition: transform .25s ease, background .2s, padding .2s, box-shadow .2s; }
 .post-card:hover { z-index: 2; }

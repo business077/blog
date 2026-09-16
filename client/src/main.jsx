@@ -12,7 +12,6 @@ const formatTime = (date) => new Intl.DateTimeFormat('en-US', { hour: 'numeric',
 const readingTime = (content = '') => `${Math.max(1, Math.ceil(content.trim().split(/\s+/).length / 220))} min read`;
 const newestFirst = (items) => [...items].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
 const apiUrl = (path) => `${(import.meta.env.VITE_API_URL || '').replace(/\/$/, '')}${path}`;
-const readingPrompts = ['READ ROHIT\'S BLOG', 'A NEW THOUGHT IS WAITING', 'STAY CURIOUS', 'ENTER THE JOURNAL', 'TAKE A SLOWER LOOK'];
 
 function App() {
   const [posts, setPosts] = useState([]);
@@ -21,24 +20,7 @@ function App() {
   const [loading, setLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState('');
   const [visitCount, setVisitCount] = useState(null);
-  const [promptIndex, setPromptIndex] = useState(0);
   const pageRef = useRef(null);
-  const heroArtRef = useRef(null);
-
-  const moveHeroArt = (event) => {
-    const element = heroArtRef.current;
-    if (!element) return;
-    const bounds = element.getBoundingClientRect();
-    const x = ((event.clientX - bounds.left) / bounds.width - 0.5) * 2;
-    const y = ((event.clientY - bounds.top) / bounds.height - 0.5) * 2;
-    element.style.setProperty('--pointer-x', `${x.toFixed(3)}`);
-    element.style.setProperty('--pointer-y', `${y.toFixed(3)}`);
-  };
-
-  const resetHeroArt = () => {
-    heroArtRef.current?.style.setProperty('--pointer-x', '0');
-    heroArtRef.current?.style.setProperty('--pointer-y', '0');
-  };
 
   const trackPagePointer = (event) => {
     document.documentElement.style.setProperty('--cursor-x', `${(event.clientX / window.innerWidth).toFixed(3)}`);
@@ -60,10 +42,6 @@ function App() {
 
   useEffect(() => { loadPosts(); }, []);
 
-  useEffect(() => {
-    const promptTimer = window.setInterval(() => setPromptIndex((current) => (current + 1) % readingPrompts.length), 4200);
-    return () => window.clearInterval(promptTimer);
-  }, []);
 
   useEffect(() => {
     const sessionKey = 'rj-flex-visit-counted';
@@ -84,11 +62,9 @@ function App() {
       const intro = gsap.timeline({ defaults: { ease: 'power3.out' } });
       intro.from('.site-header', { y: -28, opacity: 0, duration: .8 })
         .from('.hero-copy > *', { y: 28, opacity: 0, duration: .7, stagger: .1 }, '-=.35')
-        .from('.hero-art', { scale: .9, opacity: 0, rotate: 3, duration: 1 }, '-=.65')
         .from('.visit-counter', { scale: 0, opacity: 0, duration: .45, ease: 'back.out(2)' }, '-=.45');
 
       gsap.to('.hero-copy', { yPercent: -12, ease: 'none', scrollTrigger: { trigger: '.hero-section', start: 'top top', end: 'bottom top', scrub: 1 } });
-      gsap.to('.hero-art', { yPercent: 16, rotate: -2, ease: 'none', scrollTrigger: { trigger: '.hero-section', start: 'top top', end: 'bottom top', scrub: 1.2 } });
       gsap.to('.background-orbits', { scale: 1.12, opacity: .82, ease: 'none', scrollTrigger: { trigger: '.hero-section', start: 'top top', end: 'bottom top', scrub: 1.5 } });
 
       gsap.utils.toArray('.journal-section, .manifesto, .newsletter, .site-footer').forEach((section) => {
@@ -149,7 +125,6 @@ function App() {
       <main id="top">
         <section className="hero-section">
           <div className="hero-copy"><p className="eyebrow">Rohit's personal journal</p><h1>Thoughts,<br /><em>without filters.</em></h1><p className="hero-intro">Hi, I am Rohit. This is where I share my thoughts, opinions, and everyday observations with as few filters as possible.</p><a className="text-link" href="#journal">Read my latest thoughts <ArrowUpRight size={16} /></a></div>
-          <div className="hero-art" ref={heroArtRef} onPointerMove={moveHeroArt} onPointerLeave={resetHeroArt} onPointerCancel={resetHeroArt}><div className="signal-particles"><i></i><i></i><i></i><i></i><i></i><i></i></div><div className="art-sun"></div><div className="art-line line-one"></div><div className="art-line line-two"></div><div className="art-label">vol. 01 <span>·</span> 2026</div><div className="art-caption"><span key={promptIndex} className="prompt-flare">{readingPrompts[promptIndex]}</span><br />the margins</div></div>
         </section>
 
         <section className="journal-section" id="journal">
