@@ -20,6 +20,7 @@ function App() {
   const [loading, setLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState('');
   const [visitCount, setVisitCount] = useState(null);
+  const [adminActive, setAdminActive] = useState(() => Boolean(localStorage.getItem('inkwell_admin_token')));
   const [scrollProgress, setScrollProgress] = useState(0);
   const pageRef = useRef(null);
 
@@ -60,7 +61,7 @@ function App() {
 
   useEffect(() => {
     const sessionKey = 'rj-flex-visit-counted';
-    const adminExempt = sessionStorage.getItem('rj-flex-admin-exempt') === 'true';
+    const adminExempt = adminActive || sessionStorage.getItem('rj-flex-admin-exempt') === 'true';
     const method = adminExempt || sessionStorage.getItem(sessionKey) ? 'GET' : 'POST';
     if (method === 'POST') sessionStorage.setItem(sessionKey, 'true');
     const fetchVisits = (requestMethod = 'GET') => fetch(apiUrl('/api/visits'), { method: requestMethod })
@@ -135,7 +136,7 @@ function App() {
       <header className="site-header">
         <a className="brand" href="#top" onClick={(event) => { event.preventDefault(); setSelectedPost(null); window.scrollTo({ top: 0, behavior: 'smooth' }); }}><span className="brand-mark"><Feather size={17} /></span><span>RJ Flex<span className="brand-dot">.</span></span></a>
         <nav className="main-nav"><a href="#journal">Journal</a><a href="#about">About</a><a className="ask-nav-link" href="#ask">Ask Rohit</a></nav>
-        <div className="header-actions"><div className="visit-counter" title="Total site visits"><span></span><strong>{visitCount === null ? '—' : visitCount.toLocaleString()}</strong><small>visits</small></div><button className="admin-button" onClick={() => setShowAdmin(true)}><LockKeyhole size={15} /> Admin login</button></div>
+        <div className="header-actions"><div className="visit-counter" title="Total site visits"><span></span><strong>{visitCount === null ? '—' : visitCount.toLocaleString()}</strong><small>visits</small></div><button className="admin-button" onClick={() => setShowAdmin(true)}><LockKeyhole size={15} /> {adminActive ? 'Admin' : 'Admin login'}</button></div>
       </header>
 
       <main id="top">
@@ -157,7 +158,7 @@ function App() {
 
       <footer className="site-footer"><div className="brand footer-brand"><span className="brand-mark"><Feather size={17} /></span><span>RJ Flex<span className="brand-dot">.</span></span></div><span>Thoughts, honestly shared.</span><span>© 2026 Rohit</span></footer>
       {selectedPost && <PostModal post={selectedPost} onClose={() => setSelectedPost(null)} />}
-      {showAdmin && <AdminModal posts={posts} onClose={() => setShowAdmin(false)} onVisitCountChange={setVisitCount} onSaved={(post, editing) => { setPosts((current) => newestFirst(editing ? current.map((item) => item._id === post._id ? post : item) : [post, ...current])); }} onDeleted={(postId) => { setPosts((current) => current.filter((post) => post._id !== postId)); }} />}
+      {showAdmin && <AdminModal posts={posts} onClose={() => setShowAdmin(false)} onVisitCountChange={setVisitCount} onAuthChange={setAdminActive} onSaved={(post, editing) => { setPosts((current) => newestFirst(editing ? current.map((item) => item._id === post._id ? post : item) : [post, ...current])); }} onDeleted={(postId) => { setPosts((current) => current.filter((post) => post._id !== postId)); }} />}
     </div>
   );
 }
@@ -211,7 +212,7 @@ function AskQuestion() {
   return <section className="question-section" id="ask"><div className="question-heading"><MessageCircle size={25} /><div><p className="eyebrow">A quiet channel</p><h2>Ask me anything.<br /><em>Stay anonymous.</em></h2></div></div><p className="question-copy">Leave a question, thought, or point of view. I will be the only one who can see it.</p><form className="question-form" onSubmit={submit}><textarea value={message} onChange={(event) => setMessage(event.target.value)} maxLength="2000" rows="4" placeholder="Write your message here..." required /><div className="question-actions"><span>{message.length}/2000 · No name or email required</span><button className="publish-button" disabled={sending}>{sending ? 'Sending...' : 'Send anonymously'} <ArrowUpRight size={16} /></button></div>{status && <p className="question-status">{status}</p>}</form></section>;
 }
 
-function AdminModal({ posts, onClose, onVisitCountChange, onSaved, onDeleted }) {
+function AdminModal({ posts, onClose, onVisitCountChange, onAuthChange, onSaved, onDeleted }) {
   const emptyForm = { password: '', title: '', excerpt: '', content: '', category: 'Field Notes', author: 'Rohit' };
   const [form, setForm] = useState(emptyForm);
   const [editingId, setEditingId] = useState(null);
@@ -230,6 +231,7 @@ function AdminModal({ posts, onClose, onVisitCountChange, onSaved, onDeleted }) 
       const data = await response.json();
       if (!response.ok) throw new Error(data.message);
       localStorage.setItem('inkwell_admin_token', data.token);
+      onAuthChange(true);
       if (sessionStorage.getItem('rj-flex-visit-counted')) {
         const exemptResponse = await fetch(apiUrl('/api/visits/admin-exempt'), { method: 'POST', headers: { Authorization: `Bearer ${data.token}` } });
         if (exemptResponse.ok) {
@@ -279,7 +281,9 @@ function AdminModal({ posts, onClose, onVisitCountChange, onSaved, onDeleted }) 
   }, [authenticated]);
   const logout = () => {
     localStorage.removeItem('inkwell_admin_token');
+    sessionStorage.removeItem('rj-flex-admin-exempt');
     setAuthenticated(false);
+    onAuthChange(false);
     setQuestions([]);
     resetForm();
   };
