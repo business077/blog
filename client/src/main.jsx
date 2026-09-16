@@ -154,7 +154,7 @@ function App() {
         <section className="journal-section" id="journal">
           <div className="section-heading"><div><p className="eyebrow">The latest</p><h2>From the journal</h2></div><span className="issue-count">{String(posts.length).padStart(2, '0')} entries</span></div>
           {loading ? <div className="loading-state">Gathering the latest notes...</div> : errorMessage ? <div className="loading-state">{errorMessage}</div> : featured ? <>
-            <article className="featured-post" onClick={() => setSelectedPost(featured)}><div className="featured-body"><div className="featured-label">Editor's pick <span>01</span></div><div className="post-meta"><span>{featured.category}</span><span>{formatDate(featured.createdAt)} · {formatTime(featured.createdAt)}</span></div><h3>{featured.title}</h3><p>{featured.excerpt}</p><div className="post-footer"><span>By {featured.author}</span><span className="read-more">Read story <ArrowUpRight size={15} /></span></div></div></article>
+            <article className="featured-post" onClick={() => setSelectedPost(featured)}><div className="featured-body"><div className="featured-label">Editor's pick <span>01</span></div><div className="post-meta"><span>{featured.category}</span><span>{formatDate(featured.createdAt)} · {formatTime(featured.createdAt)}</span></div><h3>{featured.title}</h3><p>{featured.excerpt}</p><div className="post-footer"><span>By {featured.author}</span><span className="read-more">Tap to read <ArrowUpRight size={15} /></span></div></div></article>
             <div className="post-grid">{latest.map((post, index) => <PostCard key={post._id} post={post} index={index + 2} onClick={() => setSelectedPost(post)} />)}</div>
           </> : <div className="loading-state">No entries yet. Open the writing desk to publish one.</div>}
         </section>
@@ -178,7 +178,7 @@ function PostCard({ post, index, onClick }) {
     event.currentTarget.style.setProperty('--tilt-y', `${(x * 2).toFixed(2)}deg`);
   };
   const resetTilt = (event) => { event.currentTarget.style.setProperty('--tilt-x', '0deg'); event.currentTarget.style.setProperty('--tilt-y', '0deg'); };
-  return <article className="post-card" onClick={onClick} onPointerMove={tiltCard} onPointerLeave={resetTilt} onPointerCancel={resetTilt}><div className="card-info"><div className="post-index">{String(index).padStart(2, '0')}</div><div className="post-meta"><span>{post.category}</span><span>{formatDate(post.createdAt)} · {formatTime(post.createdAt)}</span></div><h3>{post.title}</h3><p>{post.excerpt}</p><div className="card-bottom"><span>By {post.author} · {readingTime(post.content)}</span><span className="read-more">Read story <ArrowUpRight size={15} /></span></div></div></article>;
+  return <article className="post-card" onClick={onClick} onPointerMove={tiltCard} onPointerLeave={resetTilt} onPointerCancel={resetTilt}><div className="card-info"><div className="post-index">{String(index).padStart(2, '0')}</div><div className="post-meta"><span>{post.category}</span><span>{formatDate(post.createdAt)} · {formatTime(post.createdAt)}</span></div><h3>{post.title}</h3><p>{post.excerpt}</p><div className="card-bottom"><span>By {post.author} · {readingTime(post.content)}</span><span className="read-more">Tap to read <ArrowUpRight size={15} /></span></div></div></article>;
 }
 
 function PostModal({ post, onClose }) {
