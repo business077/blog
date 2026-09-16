@@ -92,6 +92,13 @@ function App() {
         ease: 'none',
         repeat: -1
       });
+
+      gsap.to('.ambient-orb-a', { x: 120, y: 90, scale: 1.25, duration: 10, ease: 'sine.inOut', repeat: -1, yoyo: true });
+      gsap.to('.ambient-orb-b', { x: -100, y: -70, scale: .8, duration: 13, ease: 'sine.inOut', repeat: -1, yoyo: true });
+      gsap.to('.ambient-orb-c', { x: 80, y: -120, duration: 16, ease: 'sine.inOut', repeat: -1, yoyo: true });
+      gsap.to('.ambient-ring', { rotation: 360, duration: 32, ease: 'none', repeat: -1 });
+      gsap.to('.ambient-ring-inner', { rotation: -360, duration: 21, ease: 'none', repeat: -1 });
+      gsap.to('.ambient-scan', { yPercent: 100, duration: 7, ease: 'none', repeat: -1 });
     }, pageRef);
     return () => context.revert();
   }, [loading]);
@@ -101,6 +108,7 @@ function App() {
 
   return (
     <div className="app-shell" ref={pageRef} onPointerMove={trackPagePointer}>
+      <div className="visual-atmosphere" aria-hidden="true"><div className="ambient-orb ambient-orb-a"></div><div className="ambient-orb ambient-orb-b"></div><div className="ambient-orb ambient-orb-c"></div><div className="ambient-ring"><div className="ambient-ring-inner"></div></div><div className="ambient-scan"></div><div className="ambient-stars">{Array.from({ length: 30 }, (_, index) => <i key={index}></i>)}</div></div>
       <header className="site-header">
         <a className="brand" href="#top" onClick={() => setSelectedPost(null)}><span className="brand-mark"><Feather size={17} /></span><span>RJ Flex<span className="brand-dot">.</span></span></a>
         <nav className="main-nav"><a href="#journal">Journal</a><a href="#about">About</a></nav>
