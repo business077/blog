@@ -196,3 +196,12 @@ body::after { content: ''; position: fixed; z-index: -1; inset: 0; pointer-event
 @keyframes alien-fly-two { 0%, 12% { opacity: 0; transform: translate(50px, 20px) scale(.5) rotate(15deg); } 24%, 61% { opacity: .65; transform: translate(-27vw, -100px) scale(.8) rotate(-15deg); } 75%, 100% { opacity: 0; transform: translate(-70vw, -40px) scale(.4) rotate(-30deg); } }
 @keyframes beacon-message { 0%, 18% { opacity: 0; transform: translate(-50%, 20px) scale(.7); } 28%, 62% { opacity: .8; transform: translate(-50%, 0) scale(1); } 72%, 100% { opacity: 0; transform: translate(-50%, -12px) scale(.8); } }
 @media (max-width: 800px) { .friendly-alien { transform: scale(.7); }.alien-one { left: 3%; }.alien-two { right: 4%; }.read-beacon { top: 12%; font-size: 8px; } }
+.prompt-flare { display: inline-block; animation: prompt-flare-in .45s cubic-bezier(.2,.8,.2,1) both; }
+.post-card { transform: perspective(900px) rotateX(var(--tilt-x, 0deg)) rotateY(var(--tilt-y, 0deg)); transition: transform .25s ease, background .2s, padding .2s, box-shadow .2s; }
+.post-card:hover { z-index: 2; }
+.post-card .card-info { transform: translateZ(12px); }
+.reading-progress { position: sticky; z-index: 3; top: -60px; height: 3px; margin: -60px -7vw 58px; background: rgba(99,245,223,.12); }
+.reading-progress span { display: block; height: 100%; background: linear-gradient(90deg, var(--hot), var(--accent)); box-shadow: 0 0 13px var(--accent); transition: width .15s linear; }
+.post-modal { scroll-behavior: smooth; }
+@keyframes prompt-flare-in { from { opacity: 0; transform: translateY(8px); filter: blur(5px); } to { opacity: 1; transform: translateY(0); filter: blur(0); } }
+@media (max-width: 800px) { .post-card { transform: none; }.reading-progress { margin-left: -8vw; margin-right: -8vw; } }

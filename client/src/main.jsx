@@ -12,6 +12,7 @@ const formatTime = (date) => new Intl.DateTimeFormat('en-US', { hour: 'numeric',
 const readingTime = (content = '') => `${Math.max(1, Math.ceil(content.trim().split(/\s+/).length / 220))} min read`;
 const newestFirst = (items) => [...items].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
 const apiUrl = (path) => `${(import.meta.env.VITE_API_URL || '').replace(/\/$/, '')}${path}`;
+const readingPrompts = ['READ ROHIT\'S BLOG', 'A NEW THOUGHT IS WAITING', 'STAY CURIOUS', 'ENTER THE JOURNAL', 'TAKE A SLOWER LOOK'];
 
 function App() {
   const [posts, setPosts] = useState([]);
@@ -20,6 +21,7 @@ function App() {
   const [loading, setLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState('');
   const [visitCount, setVisitCount] = useState(null);
+  const [promptIndex, setPromptIndex] = useState(0);
   const pageRef = useRef(null);
   const heroArtRef = useRef(null);
 
@@ -59,6 +61,11 @@ function App() {
   useEffect(() => { loadPosts(); }, []);
 
   useEffect(() => {
+    const promptTimer = window.setInterval(() => setPromptIndex((current) => (current + 1) % readingPrompts.length), 4200);
+    return () => window.clearInterval(promptTimer);
+  }, []);
+
+  useEffect(() => {
     const sessionKey = 'rj-flex-visit-counted';
     const method = sessionStorage.getItem(sessionKey) ? 'GET' : 'POST';
     if (method === 'POST') sessionStorage.setItem(sessionKey, 'true');
@@ -76,7 +83,12 @@ function App() {
       const intro = gsap.timeline({ defaults: { ease: 'power3.out' } });
       intro.from('.site-header', { y: -28, opacity: 0, duration: .8 })
         .from('.hero-copy > *', { y: 28, opacity: 0, duration: .7, stagger: .1 }, '-=.35')
-        .from('.hero-art', { scale: .9, opacity: 0, rotate: 3, duration: 1 }, '-=.65');
+        .from('.hero-art', { scale: .9, opacity: 0, rotate: 3, duration: 1 }, '-=.65')
+        .from('.visit-counter', { scale: 0, opacity: 0, duration: .45, ease: 'back.out(2)' }, '-=.45');
+
+      gsap.to('.hero-copy', { yPercent: -12, ease: 'none', scrollTrigger: { trigger: '.hero-section', start: 'top top', end: 'bottom top', scrub: 1 } });
+      gsap.to('.hero-art', { yPercent: 16, rotate: -2, ease: 'none', scrollTrigger: { trigger: '.hero-section', start: 'top top', end: 'bottom top', scrub: 1.2 } });
+      gsap.to('.background-orbits', { scale: 1.12, opacity: .82, ease: 'none', scrollTrigger: { trigger: '.hero-section', start: 'top top', end: 'bottom top', scrub: 1.5 } });
 
       gsap.utils.toArray('.journal-section, .manifesto, .newsletter, .site-footer').forEach((section) => {
         gsap.from(section, {
@@ -112,6 +124,11 @@ function App() {
       gsap.to('.ambient-ring', { rotation: 360, duration: 32, ease: 'none', repeat: -1 });
       gsap.to('.ambient-ring-inner', { rotation: -360, duration: 21, ease: 'none', repeat: -1 });
       gsap.to('.ambient-scan', { yPercent: 100, duration: 7, ease: 'none', repeat: -1 });
+
+      gsap.utils.toArray('.main-nav a').forEach((link) => {
+        link.addEventListener('mouseenter', () => gsap.to(link, { y: -3, duration: .2, overwrite: true }));
+        link.addEventListener('mouseleave', () => gsap.to(link, { y: 0, duration: .2, overwrite: true }));
+      });
     }, pageRef);
     return () => context.revert();
   }, [loading]);
@@ -131,7 +148,7 @@ function App() {
       <main id="top">
         <section className="hero-section">
           <div className="hero-copy"><p className="eyebrow">Rohit's personal journal</p><h1>Thoughts,<br /><em>without filters.</em></h1><p className="hero-intro">Hi, I am Rohit. This is where I share my thoughts, opinions, and everyday observations with as few filters as possible.</p><a className="text-link" href="#journal">Read my latest thoughts <ArrowUpRight size={16} /></a></div>
-          <div className="hero-art" ref={heroArtRef} onPointerMove={moveHeroArt} onPointerLeave={resetHeroArt} onPointerCancel={resetHeroArt}><div className="signal-particles"><i></i><i></i><i></i><i></i><i></i><i></i></div><div className="art-sun"></div><div className="art-line line-one"></div><div className="art-line line-two"></div><div className="art-label">vol. 01 <span>·</span> 2026</div><div className="art-caption">Move through<br />the margins</div></div>
+          <div className="hero-art" ref={heroArtRef} onPointerMove={moveHeroArt} onPointerLeave={resetHeroArt} onPointerCancel={resetHeroArt}><div className="signal-particles"><i></i><i></i><i></i><i></i><i></i><i></i></div><div className="art-sun"></div><div className="art-line line-one"></div><div className="art-line line-two"></div><div className="art-label">vol. 01 <span>·</span> 2026</div><div className="art-caption"><span key={promptIndex} className="prompt-flare">{readingPrompts[promptIndex]}</span><br />the margins</div></div>
         </section>
 
         <section className="journal-section" id="journal">
@@ -153,11 +170,31 @@ function App() {
 }
 
 function PostCard({ post, index, onClick }) {
-  return <article className="post-card" onClick={onClick}><div className="card-info"><div className="post-index">{String(index).padStart(2, '0')}</div><div className="post-meta"><span>{post.category}</span><span>{formatDate(post.createdAt)} · {formatTime(post.createdAt)}</span></div><h3>{post.title}</h3><p>{post.excerpt}</p><div className="card-bottom"><span>By {post.author} · {readingTime(post.content)}</span><span className="read-more">Read story <ArrowUpRight size={15} /></span></div></div></article>;
+  const tiltCard = (event) => {
+    const bounds = event.currentTarget.getBoundingClientRect();
+    const x = ((event.clientX - bounds.left) / bounds.width - .5) * 2;
+    const y = ((event.clientY - bounds.top) / bounds.height - .5) * 2;
+    event.currentTarget.style.setProperty('--tilt-x', `${(y * -2).toFixed(2)}deg`);
+    event.currentTarget.style.setProperty('--tilt-y', `${(x * 2).toFixed(2)}deg`);
+  };
+  const resetTilt = (event) => { event.currentTarget.style.setProperty('--tilt-x', '0deg'); event.currentTarget.style.setProperty('--tilt-y', '0deg'); };
+  return <article className="post-card" onClick={onClick} onPointerMove={tiltCard} onPointerLeave={resetTilt} onPointerCancel={resetTilt}><div className="card-info"><div className="post-index">{String(index).padStart(2, '0')}</div><div className="post-meta"><span>{post.category}</span><span>{formatDate(post.createdAt)} · {formatTime(post.createdAt)}</span></div><h3>{post.title}</h3><p>{post.excerpt}</p><div className="card-bottom"><span>By {post.author} · {readingTime(post.content)}</span><span className="read-more">Read story <ArrowUpRight size={15} /></span></div></div></article>;
 }
 
 function PostModal({ post, onClose }) {
-  return <div className="modal-backdrop" onMouseDown={onClose}><article className="post-modal" onMouseDown={(event) => event.stopPropagation()}><button className="close-button" onClick={onClose} aria-label="Close"><X size={19} /></button><div className="modal-kicker">{post.category} <span>·</span> {formatDate(post.createdAt)} at {formatTime(post.createdAt)}</div><h2>{post.title}</h2><p className="modal-excerpt">{post.excerpt}</p><div className="modal-byline">By {post.author} <span>·</span> {readingTime(post.content)}</div><div className="modal-content">{post.content.split('\n').map((paragraph, index) => paragraph && <p key={index}>{paragraph}</p>)}</div><button className="back-link" onClick={onClose}><ChevronLeft size={16} /> Back to journal</button></article></div>;
+  const modalRef = useRef(null);
+  const [progress, setProgress] = useState(0);
+  useEffect(() => {
+    const element = modalRef.current;
+    if (!element) return undefined;
+    const updateProgress = () => {
+      const available = element.scrollHeight - element.clientHeight;
+      setProgress(available ? (element.scrollTop / available) * 100 : 100);
+    };
+    element.addEventListener('scroll', updateProgress, { passive: true });
+    return () => element.removeEventListener('scroll', updateProgress);
+  }, []);
+  return <div className="modal-backdrop" onMouseDown={onClose}><article className="post-modal" ref={modalRef} onMouseDown={(event) => event.stopPropagation()}><div className="reading-progress"><span style={{ width: `${progress}%` }}></span></div><button className="close-button" onClick={onClose} aria-label="Close"><X size={19} /></button><div className="modal-kicker">{post.category} <span>·</span> {formatDate(post.createdAt)} at {formatTime(post.createdAt)}</div><h2>{post.title}</h2><p className="modal-excerpt">{post.excerpt}</p><div className="modal-byline">By {post.author} <span>·</span> {readingTime(post.content)}</div><div className="modal-content">{post.content.split('\n').map((paragraph, index) => paragraph && <p key={index}>{paragraph}</p>)}</div><button className="back-link" onClick={onClose}><ChevronLeft size={16} /> Back to journal</button></article></div>;
 }
 
 function AdminModal({ posts, onClose, onSaved, onDeleted }) {
