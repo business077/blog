@@ -113,6 +113,19 @@ app.post('/api/visits/admin-exempt', requireAuth, async (_req, res) => {
   }
 });
 
+app.post('/api/visits/reset', requireAuth, async (_req, res) => {
+  try {
+    if (useDatabase) {
+      const counter = await VisitCounter.findOneAndUpdate({ key: 'site' }, { $set: { total: 0 } }, { new: true, upsert: true, setDefaultsOnInsert: true }).lean();
+      return res.json({ total: counter?.total || 0 });
+    }
+    memoryVisits = 0;
+    res.json({ total: memoryVisits });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+
 app.post('/api/questions', async (req, res) => {
   const message = req.body.message?.trim();
   if (!message) return res.status(400).json({ message: 'Please write a question or message.' });
