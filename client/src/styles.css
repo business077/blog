@@ -28,3 +28,16 @@
 .card-info h3 { font-size: 30px; }
 .card-bottom { margin-top: 18px; }
 .read-more { white-space: nowrap; }
+.admin-form-actions { display: flex; align-items: center; gap: 14px; }
+.cancel-button { border: 0; background: transparent; color: var(--muted); font-size: 12px; padding: 10px 0; }
+.manage-posts { border-top: 1px solid var(--line); margin-top: 34px; padding-top: 24px; }
+.manage-heading { display: flex; align-items: baseline; justify-content: space-between; }
+.manage-heading .eyebrow { margin-bottom: 14px; }
+.manage-heading > span { color: var(--muted); font: 10px 'DM Mono', monospace; }
+.manage-row { display: flex; align-items: center; justify-content: space-between; gap: 15px; border-top: 1px solid var(--line); padding: 14px 0; }
+.manage-row strong { display: block; font: 500 16px 'Playfair Display', serif; }
+.manage-row small { display: block; color: var(--muted); font: 10px 'DM Mono', monospace; margin-top: 4px; }
+.manage-actions { display: flex; gap: 6px; flex-shrink: 0; }
+.manage-actions button { display: grid; place-items: center; border: 1px solid var(--line); background: transparent; color: var(--ink); padding: 8px; }
+.manage-actions button:hover { border-color: var(--ink); background: var(--paper); }
+.manage-actions .delete-button { color: #a53f2b; }

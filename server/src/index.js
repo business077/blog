@@ -53,6 +53,14 @@ app.use(cors({
 app.use(express.json());
 
 const sortNewest = (posts) => [...posts].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+const postPayload = ({ title, excerpt, content, category, author }) => ({
+  title: title?.trim(),
+  excerpt: excerpt?.trim(),
+  content: content?.trim(),
+  category: category?.trim() || 'Field Notes',
+  author: author?.trim() || 'The Inkwell Team'
+});
+const validatePost = (payload) => payload.title && payload.excerpt && payload.content;
 const requireAuth = (req, res, next) => {
   const authorization = req.headers.authorization;
   const token = authorization?.startsWith('Bearer ') ? authorization.slice(7) : null;
@@ -96,15 +104,48 @@ app.get('/api/posts/:id', async (req, res) => {
 });
 
 app.post('/api/posts', requireAuth, async (req, res) => {
-  const { title, excerpt, content, category, author } = req.body;
-  if (!title?.trim() || !excerpt?.trim() || !content?.trim()) {
+  const payload = postPayload(req.body);
+  if (!validatePost(payload)) {
     return res.status(400).json({ message: 'Title, excerpt, and content are required.' });
   }
   try {
-    const payload = { title, excerpt, content, category: category || 'Field Notes', author: author || 'The Inkwell Team' };
     const post = useDatabase ? await Post.create(payload) : { ...payload, _id: `memory-${Date.now()}`, createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() };
     if (!useDatabase) memoryPosts.push(post);
     res.status(201).json(post);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+
+app.put('/api/posts/:id', requireAuth, async (req, res) => {
+  const payload = postPayload(req.body);
+  if (!validatePost(payload)) return res.status(400).json({ message: 'Title, excerpt, and content are required.' });
+  try {
+    if (useDatabase) {
+      const post = await Post.findByIdAndUpdate(req.params.id, payload, { new: true, runValidators: true }).lean();
+      if (!post) return res.status(404).json({ message: 'Post not found.' });
+      return res.json(post);
+    }
+    const postIndex = memoryPosts.findIndex((post) => post._id === req.params.id);
+    if (postIndex === -1) return res.status(404).json({ message: 'Post not found.' });
+    memoryPosts[postIndex] = { ...memoryPosts[postIndex], ...payload, updatedAt: new Date().toISOString() };
+    res.json(memoryPosts[postIndex]);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+
+app.delete('/api/posts/:id', requireAuth, async (req, res) => {
+  try {
+    if (useDatabase) {
+      const post = await Post.findByIdAndDelete(req.params.id).lean();
+      if (!post) return res.status(404).json({ message: 'Post not found.' });
+      return res.json({ message: 'Post deleted.' });
+    }
+    const postIndex = memoryPosts.findIndex((post) => post._id === req.params.id);
+    if (postIndex === -1) return res.status(404).json({ message: 'Post not found.' });
+    memoryPosts.splice(postIndex, 1);
+    res.json({ message: 'Post deleted.' });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }

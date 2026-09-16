@@ -1,6 +1,6 @@
 import { StrictMode, useEffect, useMemo, useState } from 'react';
 import { createRoot } from 'react-dom/client';
-import { ArrowUpRight, BookOpen, ChevronLeft, Clock3, Feather, LockKeyhole, Menu, PenLine, Search, X } from 'lucide-react';
+import { ArrowUpRight, BookOpen, ChevronLeft, Clock3, Feather, LockKeyhole, Menu, PenLine, Pencil, Search, Trash2, X } from 'lucide-react';
 import './styles.css';
 
 const formatDate = (date) => new Intl.DateTimeFormat('en-US', { month: 'short', day: 'numeric', year: 'numeric' }).format(new Date(date));
@@ -62,7 +62,7 @@ function App() {
 
       <footer className="site-footer"><div className="brand footer-brand"><span className="brand-mark"><Feather size={17} /></span><span>Rohit's journal<span className="brand-dot">.</span></span></div><span>Thoughts, honestly shared.</span><span>© 2026 Rohit</span></footer>
       {selectedPost && <PostModal post={selectedPost} onClose={() => setSelectedPost(null)} />}
-      {showAdmin && <AdminModal onClose={() => setShowAdmin(false)} onPublished={(post) => { setPosts((current) => [post, ...current]); setShowAdmin(false); }} />}
+      {showAdmin && <AdminModal posts={posts} onClose={() => setShowAdmin(false)} onSaved={(post, editing) => { setPosts((current) => newestFirst(editing ? current.map((item) => item._id === post._id ? post : item) : [post, ...current])); }} onDeleted={(postId) => { setPosts((current) => current.filter((post) => post._id !== postId)); }} />}
     </div>
   );
 }
@@ -75,51 +75,55 @@ function PostModal({ post, onClose }) {
   return <div className="modal-backdrop" onMouseDown={onClose}><article className="post-modal" onMouseDown={(event) => event.stopPropagation()}><button className="close-button" onClick={onClose} aria-label="Close"><X size={19} /></button><div className="modal-kicker">{post.category} <span>·</span> {formatDate(post.createdAt)} at {formatTime(post.createdAt)}</div><h2>{post.title}</h2><p className="modal-excerpt">{post.excerpt}</p><div className="modal-byline">By {post.author} <span>·</span> {readingTime(post.content)}</div><div className="modal-content">{post.content.split('\n').map((paragraph, index) => paragraph && <p key={index}>{paragraph}</p>)}</div><button className="back-link" onClick={onClose}><ChevronLeft size={16} /> Back to journal</button></article></div>;
 }
 
-function AdminModal({ onClose, onPublished }) {
-  const [form, setForm] = useState({ password: '', title: '', excerpt: '', content: '', category: 'Field Notes', author: 'The Inkwell Team' });
+function AdminModal({ posts, onClose, onSaved, onDeleted }) {
+  const emptyForm = { password: '', title: '', excerpt: '', content: '', category: 'Field Notes', author: 'Rohit' };
+  const [form, setForm] = useState(emptyForm);
+  const [editingId, setEditingId] = useState(null);
   const [error, setError] = useState('');
   const [saving, setSaving] = useState(false);
   const update = (key) => (event) => setForm({ ...form, [key]: event.target.value });
-  const publish = async (event) => {
+  const getToken = async () => {
+    let token = localStorage.getItem('inkwell_admin_token');
+    if (token) return token;
+    const loginResponse = await fetch(apiUrl('/api/auth/login'), { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ password: form.password }) });
+    const loginData = await loginResponse.json();
+    if (!loginResponse.ok) throw new Error(loginData.message);
+    localStorage.setItem('inkwell_admin_token', loginData.token);
+    return loginData.token;
+  };
+  const resetForm = () => { setForm(emptyForm); setEditingId(null); setError(''); };
+  const editPost = (post) => { setEditingId(post._id); setForm({ password: '', title: post.title, excerpt: post.excerpt, content: post.content, category: post.category, author: post.author }); setError(''); };
+  const savePost = async (event) => {
     event.preventDefault();
     setSaving(true);
     setError('');
     try {
-      let token = localStorage.getItem('inkwell_admin_token');
-      if (!token) {
-        const loginResponse = await fetch(apiUrl('/api/auth/login'), {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ password: form.password })
-        });
-        const loginData = await loginResponse.json();
-        if (!loginResponse.ok) throw new Error(loginData.message);
-        token = loginData.token;
-        localStorage.setItem('inkwell_admin_token', token);
-      }
-
-      const { password, ...postData } = form;
-      const response = await fetch(apiUrl('/api/posts'), {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-        body: JSON.stringify(postData)
-      });
+      const token = await getToken();
+      const response = await fetch(apiUrl(editingId ? `/api/posts/${editingId}` : '/api/posts'), { method: editingId ? 'PUT' : 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` }, body: JSON.stringify(form) });
       const data = await response.json();
-      if (response.status === 401) {
-        localStorage.removeItem('inkwell_admin_token');
-        throw new Error('Your admin session expired. Please submit again to sign in.');
-      }
+      if (response.status === 401) { localStorage.removeItem('inkwell_admin_token'); throw new Error('Your admin session expired. Enter the password again.'); }
       if (!response.ok) throw new Error(data.message);
-      onPublished(data);
-    } catch (publishError) {
-      setError(publishError instanceof TypeError
-        ? `Cannot reach the blog API at ${apiUrl('/api/auth/login')}. Set VITE_API_URL in Vercel and redeploy.`
-        : publishError.message);
-    } finally {
-      setSaving(false);
-    }
+      onSaved(data, Boolean(editingId));
+      resetForm();
+    } catch (saveError) {
+      setError(saveError instanceof TypeError ? `Cannot reach the blog API at ${apiUrl('/api/posts')}. Check VITE_API_URL.` : saveError.message);
+    } finally { setSaving(false); }
   };
-  return <div className="modal-backdrop" onMouseDown={onClose}><section className="admin-modal" onMouseDown={(event) => event.stopPropagation()}><div className="admin-header"><div><p className="eyebrow">The writing desk</p><h2>Publish a new post</h2></div><button className="close-button" onClick={onClose} aria-label="Close"><X size={19} /></button></div><form onSubmit={publish}><label>Admin password<div className="input-with-icon"><LockKeyhole size={15} /><input type="password" value={form.password} onChange={update('password')} placeholder="Enter password" required /></div></label><div className="form-split"><label>Category<input value={form.category} onChange={update('category')} /></label><label>Author<input value={form.author} onChange={update('author')} /></label></div><label>Title<input value={form.title} onChange={update('title')} placeholder="A title worth keeping" required /></label><label>Short excerpt<textarea value={form.excerpt} onChange={update('excerpt')} rows="2" placeholder="A sentence to draw readers in" required /></label><label>Post content<textarea className="content-input" value={form.content} onChange={update('content')} rows="8" placeholder="Write your story here..." required /></label>{error && <p className="form-error">{error}</p>}<button className="publish-button" disabled={saving}>{saving ? 'Publishing...' : 'Publish to Inkwell'} <ArrowUpRight size={16} /></button></form></section></div>;
+  const deletePost = async (post) => {
+    if (!window.confirm(`Delete “${post.title}”? This cannot be undone.`)) return;
+    setSaving(true);
+    setError('');
+    try {
+      const token = await getToken();
+      const response = await fetch(apiUrl(`/api/posts/${post._id}`), { method: 'DELETE', headers: { Authorization: `Bearer ${token}` } });
+      const data = await response.json();
+      if (response.status === 401) { localStorage.removeItem('inkwell_admin_token'); throw new Error('Your admin session expired. Enter the password again.'); }
+      if (!response.ok) throw new Error(data.message);
+      onDeleted(post._id);
+      if (editingId === post._id) resetForm();
+    } catch (deleteError) { setError(deleteError.message); } finally { setSaving(false); }
+  };
+  return <div className="modal-backdrop" onMouseDown={onClose}><section className="admin-modal" onMouseDown={(event) => event.stopPropagation()}><div className="admin-header"><div><p className="eyebrow">The writing desk</p><h2>{editingId ? 'Edit post' : 'Publish a new post'}</h2></div><button className="close-button" onClick={onClose} aria-label="Close"><X size={19} /></button></div><form onSubmit={savePost}><label>Admin password<div className="input-with-icon"><LockKeyhole size={15} /><input type="password" value={form.password} onChange={update('password')} placeholder={editingId ? 'Saved session or enter password' : 'Enter password'} /></div></label><div className="form-split"><label>Category<input value={form.category} onChange={update('category')} /></label><label>Author<input value={form.author} onChange={update('author')} /></label></div><label>Title<input value={form.title} onChange={update('title')} placeholder="A title worth keeping" required /></label><label>Short excerpt<textarea value={form.excerpt} onChange={update('excerpt')} rows="2" placeholder="A sentence to draw readers in" required /></label><label>Post content<textarea className="content-input" value={form.content} onChange={update('content')} rows="8" placeholder="Write your story here..." required /></label>{error && <p className="form-error">{error}</p>}<div className="admin-form-actions"><button className="publish-button" disabled={saving}>{saving ? 'Saving...' : editingId ? 'Save changes' : 'Publish to Inkwell'} <ArrowUpRight size={16} /></button>{editingId && <button type="button" className="cancel-button" onClick={resetForm}>Cancel edit</button>}</div></form><div className="manage-posts"><div className="manage-heading"><p className="eyebrow">Manage posts</p><span>{posts.length} total</span></div>{posts.map((post) => <div className="manage-row" key={post._id}><div><strong>{post.title}</strong><small>{formatDate(post.createdAt)}</small></div><div className="manage-actions"><button type="button" onClick={() => editPost(post)} aria-label={`Edit ${post.title}`} title="Edit post"><Pencil size={15} /></button><button type="button" className="delete-button" onClick={() => deletePost(post)} aria-label={`Delete ${post.title}`} title="Delete post"><Trash2 size={15} /></button></div></div>)}</div></section></div>;
 }
 
 createRoot(document.getElementById('root')).render(<StrictMode><App /></StrictMode>);
