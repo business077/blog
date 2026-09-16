@@ -1,4 +1,4 @@
-# Inkwell Journal
+# RJ Flex Journal
 
 A MERN-style editorial blog with a React/Vite client, Express API, and Mongoose `Post` model.
 
