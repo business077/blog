@@ -192,12 +192,14 @@ body::after { content: ''; position: fixed; z-index: -1; inset: 0; pointer-event
 .alien-eye { position: absolute; z-index: 1; top: 9px; width: 6px; height: 8px; border-radius: 50%; background: #e9ffff; box-shadow: 0 0 7px #fff; }.eye-one { left: 9px; }.eye-two { right: 9px; }
 .alien-antenna { position: absolute; z-index: -1; top: -10px; width: 1px; height: 13px; background: #d7c6ff; }.antenna-one { left: 10px; transform: rotate(-20deg); }.antenna-two { right: 10px; transform: rotate(20deg); }
 .alien-one { left: 12%; top: 38%; animation: alien-fly-one 19s ease-in-out 2s infinite; }.alien-two { right: 18%; top: 78%; transform: scale(.65); animation: alien-fly-two 23s ease-in-out 8s infinite; }
-.read-beacon { position: absolute; left: 50%; top: 19%; display: flex; align-items: center; gap: 8px; color: var(--accent); font: 9px 'DM Mono', monospace; letter-spacing: 1.5px; white-space: nowrap; opacity: 0; animation: beacon-message 14s ease-in-out 3s infinite; }
-.read-beacon span { padding: 8px 10px; border: 1px solid rgba(99,245,223,.55); background: rgba(6,16,20,.7); box-shadow: 0 0 18px rgba(99,245,223,.2); }.read-beacon i { width: 7px; height: 7px; border-radius: 50%; background: var(--accent); box-shadow: 0 0 12px var(--accent); }
 @keyframes alien-fly-one { 0%, 8% { opacity: 0; transform: translate(-40px, 30px) rotate(-12deg) scale(.5); } 18%, 58% { opacity: .8; transform: translate(21vw, -65px) rotate(10deg) scale(1); } 70%, 100% { opacity: 0; transform: translate(70vw, 30px) rotate(25deg) scale(.6); } }
 @keyframes alien-fly-two { 0%, 12% { opacity: 0; transform: translate(50px, 20px) scale(.5) rotate(15deg); } 24%, 61% { opacity: .65; transform: translate(-27vw, -100px) scale(.8) rotate(-15deg); } 75%, 100% { opacity: 0; transform: translate(-70vw, -40px) scale(.4) rotate(-30deg); } }
-@keyframes beacon-message { 0%, 18% { opacity: 0; transform: translate(-50%, 20px) scale(.7); } 28%, 62% { opacity: .8; transform: translate(-50%, 0) scale(1); } 72%, 100% { opacity: 0; transform: translate(-50%, -12px) scale(.8); } }
-@media (max-width: 800px) { .friendly-alien { transform: scale(.7); }.alien-one { left: 3%; }.alien-two { right: 4%; }.read-beacon { top: 12%; font-size: 8px; } }
+@media (max-width: 800px) { .friendly-alien { transform: scale(.7); }.alien-one { left: 3%; }.alien-two { right: 4%; } }
+.energy-ribbons { position: absolute; inset: 0; overflow: hidden; pointer-events: none; opacity: .55; }
+.energy-ribbons i { position: absolute; width: 70vw; height: 12vw; min-height: 70px; border: 1px solid rgba(99,245,223,.16); border-left-color: transparent; border-right-color: transparent; border-radius: 50%; filter: blur(.2px); transform: rotate(-18deg); animation: ribbon-drift 14s ease-in-out infinite; }
+.energy-ribbons i:nth-child(1) { left: -18%; top: 24%; }.energy-ribbons i:nth-child(2) { right: -22%; top: 57%; transform: rotate(24deg) scale(.75); border-color: rgba(255,128,103,.14); animation-delay: -5s; }.energy-ribbons i:nth-child(3) { left: 12%; bottom: 7%; transform: rotate(-8deg) scale(.5); border-color: rgba(192,168,255,.13); animation-delay: -9s; }
+@keyframes ribbon-drift { 0%, 100% { margin-left: -3vw; opacity: .18; } 50% { margin-left: 9vw; opacity: .75; } }
+@media (max-width: 800px) { .energy-ribbons i { width: 120vw; height: 22vw; } }
 .prompt-flare { display: inline-block; animation: prompt-flare-in .45s cubic-bezier(.2,.8,.2,1) both; }
 .post-card { transform: perspective(900px) rotateX(var(--tilt-x, 0deg)) rotateY(var(--tilt-y, 0deg)); transition: transform .25s ease, background .2s, padding .2s, box-shadow .2s; }
 .post-card:hover { z-index: 2; }
