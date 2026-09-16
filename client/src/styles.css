@@ -11,3 +11,20 @@
 @keyframes rise { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
 @media (max-width: 800px) { .site-header { padding: 0 5vw; }.main-nav, .icon-button { display: none; }.menu-button { display: grid; }.admin-button { padding: 8px 10px; }.hero-section { padding: 55px 7vw; grid-template-columns: 1fr; gap: 45px; }.hero-art { height: 250px; }.journal-section { padding: 60px 7vw; }.featured-post { grid-template-columns: 1fr; gap: 28px; }.featured-image { height: 270px; }.post-grid { grid-template-columns: 1fr; }.post-card { grid-template-columns: 130px 1fr; gap: 17px; }.card-art { min-height: 180px; }.manifesto, .newsletter { grid-template-columns: 1fr; padding: 65px 8vw; gap: 15px; }.manifesto-copy { margin: 15px 0 0; }.site-footer { padding: 24px 7vw; flex-wrap: wrap; gap: 15px; }.site-footer > span:last-child { width: 100%; }.post-modal { padding: 55px 8vw 40px; }.post-modal h2 { font-size: 39px; }.admin-modal { padding: 33px 25px; } }
 @media (max-width: 460px) { h1 { font-size: 54px; }.section-heading h2 { font-size: 34px; }.issue-count { font-size: 9px; }.featured-body h3 { font-size: 32px; }.post-card { grid-template-columns: 1fr; }.card-art { min-height: 150px; }.card-art > div { width: 180px; height: 180px; left: 30%; top: 15px; }.form-split { grid-template-columns: 1fr; gap: 17px; } }
+
+/* Text-first journal presentation. */
+.featured-post { display: block; max-width: 820px; margin: 0 auto 64px; padding: 0 0 34px; border-bottom: 1px solid var(--line); }
+.featured-body { max-width: 720px; }
+.featured-label { display: flex; justify-content: space-between; align-items: center; color: var(--accent); font: 10px 'DM Mono', monospace; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 22px; }
+.featured-label span, .post-index { color: var(--muted); }
+.featured-body h3 { font-size: clamp(34px, 4vw, 52px); }
+.post-grid { max-width: 820px; gap: 0; }
+.post-card { display: block; padding: 30px 0; border-top: 1px solid var(--line); transition: background .2s, padding .2s; }
+.post-card:hover { background: var(--paper); padding-left: 18px; padding-right: 18px; }
+.post-card:focus-within, .featured-post:focus { outline: 2px solid var(--accent); outline-offset: 5px; }
+.post-index { font: 11px 'DM Mono', monospace; margin-bottom: 13px; }
+.card-info { max-width: 720px; }
+.card-info .post-meta { flex-direction: row; margin-bottom: 12px; }
+.card-info h3 { font-size: 30px; }
+.card-bottom { margin-top: 18px; }
+.read-more { white-space: nowrap; }

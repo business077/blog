@@ -51,7 +51,7 @@ function App() {
         <section className="journal-section" id="journal">
           <div className="section-heading"><div><p className="eyebrow">The latest</p><h2>From the journal</h2></div><span className="issue-count">{String(posts.length).padStart(2, '0')} entries</span></div>
           {loading ? <div className="loading-state">Gathering the latest notes...</div> : errorMessage ? <div className="loading-state">{errorMessage}</div> : featured ? <>
-            <article className="featured-post" onClick={() => setSelectedPost(featured)}><div className="featured-image"><div className="image-number">01</div><div className="image-shape"></div><span>Editor's pick</span></div><div className="featured-body"><div className="post-meta"><span>{featured.category}</span><span>{formatDate(featured.createdAt)} · {formatTime(featured.createdAt)}</span></div><h3>{featured.title}</h3><p>{featured.excerpt}</p><div className="post-footer"><span>By {featured.author}</span><span className="read-more">Read story <ArrowUpRight size={15} /></span></div></div></article>
+            <article className="featured-post" onClick={() => setSelectedPost(featured)}><div className="featured-body"><div className="featured-label">Editor's pick <span>01</span></div><div className="post-meta"><span>{featured.category}</span><span>{formatDate(featured.createdAt)} · {formatTime(featured.createdAt)}</span></div><h3>{featured.title}</h3><p>{featured.excerpt}</p><div className="post-footer"><span>By {featured.author}</span><span className="read-more">Read story <ArrowUpRight size={15} /></span></div></div></article>
             <div className="post-grid">{latest.map((post, index) => <PostCard key={post._id} post={post} index={index + 2} onClick={() => setSelectedPost(post)} />)}</div>
           </> : <div className="loading-state">No entries yet. Open the writing desk to publish one.</div>}
         </section>
@@ -68,7 +68,7 @@ function App() {
 }
 
 function PostCard({ post, index, onClick }) {
-  return <article className="post-card" onClick={onClick}><div className={`card-art art-${index % 3}`}><span>{String(index).padStart(2, '0')}</span><div></div></div><div className="card-info"><div className="post-meta"><span>{post.category}</span><span>{formatDate(post.createdAt)}</span></div><h3>{post.title}</h3><p>{post.excerpt}</p><div className="card-bottom"><span>{readingTime(post.content)}</span><ArrowUpRight size={16} /></div></div></article>;
+  return <article className="post-card" onClick={onClick}><div className="card-info"><div className="post-index">{String(index).padStart(2, '0')}</div><div className="post-meta"><span>{post.category}</span><span>{formatDate(post.createdAt)} · {formatTime(post.createdAt)}</span></div><h3>{post.title}</h3><p>{post.excerpt}</p><div className="card-bottom"><span>By {post.author} · {readingTime(post.content)}</span><span className="read-more">Read story <ArrowUpRight size={15} /></span></div></div></article>;
 }
 
 function PostModal({ post, onClose }) {
