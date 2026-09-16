@@ -1,7 +1,11 @@
 import { StrictMode, useEffect, useMemo, useRef, useState } from 'react';
 import { createRoot } from 'react-dom/client';
+import gsap from 'gsap';
+import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { ArrowUpRight, BookOpen, ChevronLeft, Clock3, Feather, LockKeyhole, PenLine, Pencil, Trash2, X } from 'lucide-react';
 import './styles.css';
+
+gsap.registerPlugin(ScrollTrigger);
 
 const formatDate = (date) => new Intl.DateTimeFormat('en-US', { month: 'short', day: 'numeric', year: 'numeric' }).format(new Date(date));
 const formatTime = (date) => new Intl.DateTimeFormat('en-US', { hour: 'numeric', minute: '2-digit' }).format(new Date(date));
@@ -15,6 +19,7 @@ function App() {
   const [showAdmin, setShowAdmin] = useState(false);
   const [loading, setLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState('');
+  const pageRef = useRef(null);
   const heroArtRef = useRef(null);
 
   const moveHeroArt = (event) => {
@@ -52,11 +57,50 @@ function App() {
 
   useEffect(() => { loadPosts(); }, []);
 
+  useEffect(() => {
+    if (loading || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return undefined;
+    const context = gsap.context(() => {
+      const intro = gsap.timeline({ defaults: { ease: 'power3.out' } });
+      intro.from('.site-header', { y: -28, opacity: 0, duration: .8 })
+        .from('.hero-copy > *', { y: 28, opacity: 0, duration: .7, stagger: .1 }, '-=.35')
+        .from('.hero-art', { scale: .9, opacity: 0, rotate: 3, duration: 1 }, '-=.65');
+
+      gsap.utils.toArray('.journal-section, .manifesto, .newsletter, .site-footer').forEach((section) => {
+        gsap.from(section, {
+          opacity: 0,
+          y: 55,
+          duration: .9,
+          ease: 'power3.out',
+          scrollTrigger: { trigger: section, start: 'top 82%', once: true }
+        });
+      });
+
+      gsap.utils.toArray('.post-card').forEach((card, index) => {
+        gsap.from(card, {
+          opacity: 0,
+          x: index % 2 ? 35 : -35,
+          duration: .7,
+          delay: index * .06,
+          ease: 'power2.out',
+          scrollTrigger: { trigger: card, start: 'top 88%', once: true }
+        });
+      });
+
+      gsap.to('.art-sun', {
+        rotation: 360,
+        duration: 18,
+        ease: 'none',
+        repeat: -1
+      });
+    }, pageRef);
+    return () => context.revert();
+  }, [loading]);
+
   const featured = posts[0];
   const latest = useMemo(() => posts.slice(1), [posts]);
 
   return (
-    <div className="app-shell" onPointerMove={trackPagePointer}>
+    <div className="app-shell" ref={pageRef} onPointerMove={trackPagePointer}>
       <header className="site-header">
         <a className="brand" href="#top" onClick={() => setSelectedPost(null)}><span className="brand-mark"><Feather size={17} /></span><span>RJ Flex<span className="brand-dot">.</span></span></a>
         <nav className="main-nav"><a href="#journal">Journal</a><a href="#about">About</a></nav>
