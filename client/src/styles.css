@@ -54,6 +54,9 @@
 .manage-actions .delete-button { color: #a53f2b; }
 .admin-login-modal { max-width: 520px; }
 .login-copy { color: var(--muted); font-size: 14px; line-height: 1.7; margin: -8px 0 26px; }
+.admin-header-actions { display: flex; align-items: flex-start; gap: 10px; }
+.logout-button { border: 1px solid var(--line); background: transparent; color: var(--muted); padding: 7px 10px; font: 10px 'DM Mono', monospace; text-transform: uppercase; letter-spacing: .7px; transition: color .2s, border-color .2s; }
+.logout-button:hover { color: var(--hot); border-color: var(--hot); }
 .question-section { position: relative; padding: 90px 11vw; border-top: 1px solid var(--line); background: rgba(7, 22, 28, .82); overflow: hidden; }
 .question-section::before { content: ''; position: absolute; width: 280px; height: 280px; right: 8%; top: 18%; border: 1px solid rgba(99,245,223,.12); border-radius: 50%; animation: radar 12s linear infinite; }
 .question-heading { position: relative; z-index: 1; display: flex; align-items: flex-start; gap: 20px; }.question-heading > svg { color: var(--accent); margin-top: 5px; filter: drop-shadow(0 0 8px var(--accent)); }.question-copy { position: relative; z-index: 1; max-width: 430px; color: var(--muted); line-height: 1.7; margin: 22px 0; }

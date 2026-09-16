@@ -217,7 +217,7 @@ function AdminModal({ posts, onClose, onVisitCountChange, onSaved, onDeleted }) 
   const [editingId, setEditingId] = useState(null);
   const [error, setError] = useState('');
   const [saving, setSaving] = useState(false);
-  const [authenticated, setAuthenticated] = useState(false);
+  const [authenticated, setAuthenticated] = useState(() => Boolean(localStorage.getItem('inkwell_admin_token')));
   const [loginPassword, setLoginPassword] = useState('');
   const [questions, setQuestions] = useState([]);
   const update = (key) => (event) => setForm({ ...form, [key]: event.target.value });
@@ -258,6 +258,31 @@ function AdminModal({ posts, onClose, onVisitCountChange, onSaved, onDeleted }) 
     localStorage.setItem('inkwell_admin_token', loginData.token);
     return loginData.token;
   };
+  useEffect(() => {
+    if (!authenticated) return undefined;
+    const token = localStorage.getItem('inkwell_admin_token');
+    if (!token) {
+      setAuthenticated(false);
+      return undefined;
+    }
+    fetch(apiUrl('/api/questions'), { headers: { Authorization: `Bearer ${token}` } })
+      .then(async (response) => {
+        if (response.status === 401) {
+          localStorage.removeItem('inkwell_admin_token');
+          setAuthenticated(false);
+          return;
+        }
+        if (response.ok) setQuestions(await response.json());
+      })
+      .catch(() => {});
+    return undefined;
+  }, [authenticated]);
+  const logout = () => {
+    localStorage.removeItem('inkwell_admin_token');
+    setAuthenticated(false);
+    setQuestions([]);
+    resetForm();
+  };
   const resetForm = () => { setForm(emptyForm); setEditingId(null); setError(''); };
   const editPost = (post) => { setEditingId(post._id); setForm({ password: '', title: post.title, excerpt: post.excerpt, content: post.content, category: post.category, author: post.author }); setError(''); };
   const savePost = async (event) => {
@@ -291,7 +316,7 @@ function AdminModal({ posts, onClose, onVisitCountChange, onSaved, onDeleted }) 
     } catch (deleteError) { setError(deleteError.message); } finally { setSaving(false); }
   };
   if (!authenticated) return <div className="modal-backdrop" onMouseDown={onClose}><section className="admin-modal admin-login-modal" onMouseDown={(event) => event.stopPropagation()}><div className="admin-header"><div><p className="eyebrow">Private access</p><h2>Admin login</h2></div><button className="close-button" onClick={onClose} aria-label="Close"><X size={19} /></button></div><p className="login-copy">Sign in to publish, edit, or delete posts.</p><form onSubmit={login}><label>Password<div className="input-with-icon"><LockKeyhole size={15} /><input autoFocus type="password" value={loginPassword} onChange={(event) => setLoginPassword(event.target.value)} placeholder="Enter admin password" required /></div></label>{error && <p className="form-error">{error}</p>}<button className="publish-button" disabled={saving}>{saving ? 'Signing in...' : 'Continue to writing desk'} <ArrowUpRight size={16} /></button></form></section></div>;
-  return <div className="modal-backdrop" onMouseDown={onClose}><section className="admin-modal" onMouseDown={(event) => event.stopPropagation()}><div className="admin-header"><div><p className="eyebrow">The writing desk</p><h2>{editingId ? 'Edit post' : 'Publish a new post'}</h2></div><button className="close-button" onClick={onClose} aria-label="Close"><X size={19} /></button></div><form onSubmit={savePost}><label>Admin password<div className="input-with-icon"><LockKeyhole size={15} /><input type="password" value={form.password} onChange={update('password')} placeholder={editingId ? 'Saved session or enter password' : 'Enter password'} /></div></label><div className="form-split"><label>Category<input value={form.category} onChange={update('category')} /></label><label>Author<input value={form.author} onChange={update('author')} /></label></div><label>Title<input value={form.title} onChange={update('title')} placeholder="A title worth keeping" required /></label><label>Short excerpt<textarea value={form.excerpt} onChange={update('excerpt')} rows="2" placeholder="A sentence to draw readers in" required /></label><label>Post content<textarea className="content-input" value={form.content} onChange={update('content')} rows="8" placeholder="Write your story here..." required /></label>{error && <p className="form-error">{error}</p>}<div className="admin-form-actions"><button className="publish-button" disabled={saving}>{saving ? 'Saving...' : editingId ? 'Save changes' : 'Publish to RJ Flex'} <ArrowUpRight size={16} /></button>{editingId && <button type="button" className="cancel-button" onClick={resetForm}>Cancel edit</button>}</div></form><div className="manage-posts"><div className="manage-heading"><p className="eyebrow">Manage posts</p><span>{posts.length} total</span></div>{posts.map((post) => <div className="manage-row" key={post._id}><div><strong>{post.title}</strong><small>{formatDate(post.createdAt)}</small></div><div className="manage-actions"><button type="button" onClick={() => editPost(post)} aria-label={`Edit ${post.title}`} title="Edit post"><Pencil size={15} /></button><button type="button" className="delete-button" onClick={() => deletePost(post)} aria-label={`Delete ${post.title}`} title="Delete post"><Trash2 size={15} /></button></div></div>)}</div><div className="question-inbox"><div className="manage-heading"><p className="eyebrow">Anonymous inbox</p><span>{questions.length} messages</span></div>{questions.length ? questions.map((question) => <div className="question-row" key={question._id}><p>{question.message}</p><small>{formatDate(question.createdAt)} · {formatTime(question.createdAt)}</small></div>) : <p className="empty-inbox">No anonymous messages yet.</p>}</div></section></div>;
+  return <div className="modal-backdrop" onMouseDown={onClose}><section className="admin-modal" onMouseDown={(event) => event.stopPropagation()}><div className="admin-header"><div><p className="eyebrow">The writing desk</p><h2>{editingId ? 'Edit post' : 'Publish a new post'}</h2></div><div className="admin-header-actions"><button type="button" className="logout-button" onClick={logout}>Log out</button><button className="close-button" onClick={onClose} aria-label="Close"><X size={19} /></button></div></div><form onSubmit={savePost}><div className="form-split"><label>Category<input value={form.category} onChange={update('category')} /></label><label>Author<input value={form.author} onChange={update('author')} /></label></div><label>Title<input value={form.title} onChange={update('title')} placeholder="A title worth keeping" required /></label><label>Short excerpt<textarea value={form.excerpt} onChange={update('excerpt')} rows="2" placeholder="A sentence to draw readers in" required /></label><label>Post content<textarea className="content-input" value={form.content} onChange={update('content')} rows="8" placeholder="Write your story here..." required /></label>{error && <p className="form-error">{error}</p>}<div className="admin-form-actions"><button className="publish-button" disabled={saving}>{saving ? 'Saving...' : editingId ? 'Save changes' : 'Publish to RJ Flex'} <ArrowUpRight size={16} /></button>{editingId && <button type="button" className="cancel-button" onClick={resetForm}>Cancel edit</button>}</div></form><div className="manage-posts"><div className="manage-heading"><p className="eyebrow">Manage posts</p><span>{posts.length} total</span></div>{posts.map((post) => <div className="manage-row" key={post._id}><div><strong>{post.title}</strong><small>{formatDate(post.createdAt)}</small></div><div className="manage-actions"><button type="button" onClick={() => editPost(post)} aria-label={`Edit ${post.title}`} title="Edit post"><Pencil size={15} /></button><button type="button" className="delete-button" onClick={() => deletePost(post)} aria-label={`Delete ${post.title}`} title="Delete post"><Trash2 size={15} /></button></div></div>)}</div><div className="question-inbox"><div className="manage-heading"><p className="eyebrow">Anonymous inbox</p><span>{questions.length} messages</span></div>{questions.length ? questions.map((question) => <div className="question-row" key={question._id}><p>{question.message}</p><small>{formatDate(question.createdAt)} · {formatTime(question.createdAt)}</small></div>) : <p className="empty-inbox">No anonymous messages yet.</p>}</div></section></div>;
 }
 
 createRoot(document.getElementById('root')).render(<StrictMode><App /></StrictMode>);
