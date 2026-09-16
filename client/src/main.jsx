@@ -44,7 +44,7 @@ function App() {
 
       <main id="top">
         <section className="hero-section">
-          <div className="hero-copy"><p className="eyebrow">A journal for the curious</p><h1>Good thoughts,<br /><em>well kept.</em></h1><p className="hero-intro">Inkwell is a quiet corner of the internet for ideas about making, noticing, and living with intention.</p><a className="text-link" href="#journal">Explore the journal <ArrowUpRight size={16} /></a></div>
+          <div className="hero-copy"><p className="eyebrow">Rohit's personal journal</p><h1>Thoughts,<br /><em>without filters.</em></h1><p className="hero-intro">Hi, I am Rohit. This is where I share my thoughts, opinions, and everyday observations with as few filters as possible.</p><a className="text-link" href="#journal">Read my latest thoughts <ArrowUpRight size={16} /></a></div>
           <div className="hero-art"><div className="art-sun"></div><div className="art-line line-one"></div><div className="art-line line-two"></div><div className="art-label">vol. 01 <span>·</span> 2026</div><div className="art-caption">Notes from<br />the margins</div></div>
         </section>
 
@@ -56,11 +56,11 @@ function App() {
           </> : <div className="loading-state">No entries yet. Open the writing desk to publish one.</div>}
         </section>
 
-        <section className="manifesto" id="about"><div className="manifesto-mark"><BookOpen size={27} strokeWidth={1.5} /></div><div><p className="eyebrow">A note from the desk</p><h2>There is still room<br /><em>for a slower internet.</em></h2></div><p className="manifesto-copy">We make space for writing that rewards attention. No hot takes, no hurry, no noise for noise's sake. Just a collection of things worth sitting with.</p></section>
-        <section className="newsletter" id="newsletter"><div><p className="eyebrow">The Sunday letter</p><h2>A little something<br /><em>for your inbox.</em></h2></div><form onSubmit={(event) => event.preventDefault()}><label htmlFor="email">Your email address</label><div className="email-row"><input id="email" type="email" placeholder="you@example.com" required /><button type="submit">Subscribe <ArrowUpRight size={16} /></button></div><small>One thoughtful note, occasionally. Unsubscribe anytime.</small></form></section>
+        <section className="manifesto" id="about"><div className="manifesto-mark"><BookOpen size={27} strokeWidth={1.5} /></div><div><p className="eyebrow">A note from Rohit</p><h2>Honest thoughts,<br /><em>shared respectfully.</em></h2></div><p className="manifesto-copy">I am here to share my point of view, my experiences, and the thoughts that stay with me. My writing may be direct and personal, but the purpose is never to hurt anyone. Please read it as my perspective, not a personal attack, and do not take it personally.</p></section>
+        <section className="newsletter" id="newsletter"><div><p className="eyebrow">Stay connected</p><h2>More thoughts<br /><em>from Rohit.</em></h2></div><form onSubmit={(event) => event.preventDefault()}><label htmlFor="email">Your email address</label><div className="email-row"><input id="email" type="email" placeholder="you@example.com" required /><button type="submit">Subscribe <ArrowUpRight size={16} /></button></div><small>Occasional notes from my journal. Unsubscribe anytime.</small></form></section>
       </main>
 
-      <footer className="site-footer"><div className="brand footer-brand"><span className="brand-mark"><Feather size={17} /></span><span>inkwell<span className="brand-dot">.</span></span></div><span>Made for the in-between moments.</span><span>© 2026 Inkwell Journal</span></footer>
+      <footer className="site-footer"><div className="brand footer-brand"><span className="brand-mark"><Feather size={17} /></span><span>Rohit's journal<span className="brand-dot">.</span></span></div><span>Thoughts, honestly shared.</span><span>© 2026 Rohit</span></footer>
       {selectedPost && <PostModal post={selectedPost} onClose={() => setSelectedPost(null)} />}
       {showAdmin && <AdminModal onClose={() => setShowAdmin(false)} onPublished={(post) => { setPosts((current) => [post, ...current]); setShowAdmin(false); }} />}
     </div>
