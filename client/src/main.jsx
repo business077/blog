@@ -20,6 +20,7 @@ function App() {
   const [loading, setLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState('');
   const [visitCount, setVisitCount] = useState(null);
+  const [scrollProgress, setScrollProgress] = useState(0);
   const pageRef = useRef(null);
 
   const trackPagePointer = (event) => {
@@ -41,6 +42,20 @@ function App() {
   };
 
   useEffect(() => { loadPosts(); }, []);
+
+  useEffect(() => {
+    let frame;
+    const updateScrollProgress = () => {
+      cancelAnimationFrame(frame);
+      frame = requestAnimationFrame(() => {
+        const maxScroll = document.documentElement.scrollHeight - window.innerHeight;
+        setScrollProgress(maxScroll > 0 ? (window.scrollY / maxScroll) * 100 : 0);
+      });
+    };
+    window.addEventListener('scroll', updateScrollProgress, { passive: true });
+    updateScrollProgress();
+    return () => { cancelAnimationFrame(frame); window.removeEventListener('scroll', updateScrollProgress); };
+  }, []);
 
 
   useEffect(() => {
@@ -115,6 +130,7 @@ function App() {
 
   return (
     <div className="app-shell" ref={pageRef} onPointerMove={trackPagePointer}>
+      <div className="scroll-progress" aria-hidden="true"><span style={{ width: `${scrollProgress}%` }}></span></div>
       <div className="visual-atmosphere" aria-hidden="true"><div className="ambient-orb ambient-orb-a"></div><div className="ambient-orb ambient-orb-b"></div><div className="ambient-orb ambient-orb-c"></div><div className="ambient-ring"><div className="ambient-ring-inner"></div></div><div className="background-orbits"><div className="orbit-core"></div><div className="orbit-path orbit-path-one"><i></i></div><div className="orbit-path orbit-path-two"><i></i></div><div className="orbit-path orbit-path-three"><i></i></div></div><div className="energy-ribbons"><i></i><i></i><i></i></div><div className="space-traffic"><div className="rocket rocket-one"><span></span></div><div className="rocket rocket-two"><span></span></div><div className="satellite satellite-one"><span></span></div><div className="tiny-astronaut"><div className="astronaut-bubble">HELLO</div><div className="astronaut-helmet"></div><div className="astronaut-body"></div><div className="astronaut-pack"></div><div className="astronaut-boot boot-one"></div><div className="astronaut-boot boot-two"></div></div><div className="friendly-alien alien-one"><span className="alien-eye eye-one"></span><span className="alien-eye eye-two"></span><span className="alien-antenna antenna-one"></span><span className="alien-antenna antenna-two"></span></div><div className="friendly-alien alien-two"><span className="alien-eye eye-one"></span><span className="alien-eye eye-two"></span><span className="alien-antenna antenna-one"></span><span className="alien-antenna antenna-two"></span></div></div><div className="ambient-scan"></div><div className="ambient-stars">{Array.from({ length: 30 }, (_, index) => <i key={index}></i>)}</div></div>
       <header className="site-header">
         <a className="brand" href="#top" onClick={(event) => { event.preventDefault(); setSelectedPost(null); window.scrollTo({ top: 0, behavior: 'smooth' }); }}><span className="brand-mark"><Feather size={17} /></span><span>RJ Flex<span className="brand-dot">.</span></span></a>
@@ -124,13 +140,13 @@ function App() {
 
       <main id="top">
         <section className="hero-section">
-          <div className="hero-copy"><p className="eyebrow">Rohit's personal journal</p><h1>Thoughts,<br /><em>without filters.</em></h1><p className="hero-intro">Hi, I am Rohit. This is where I share my thoughts, opinions, and everyday observations with as few filters as possible.</p><a className="text-link" href="#journal">Read my latest thoughts <ArrowUpRight size={16} /></a></div>
+          <div className="hero-copy"><p className="eyebrow">Rohit's personal journal</p><h1>Thoughts,<br /><em>without filters.</em></h1><p className="hero-intro">Hi, I am Rohit. This is where I share my thoughts, opinions, and everyday observations with as few filters as possible.</p><a className="text-link" href="#journal">Read my latest thoughts <ArrowUpRight size={16} /></a><div className="hero-signal"><span className="signal-live"><i></i> LIVE JOURNAL</span><span>updated as thoughts arrive</span><span className="signal-arrow">↓</span></div></div>
         </section>
 
         <section className="journal-section" id="journal">
           <div className="section-heading"><div><p className="eyebrow">The latest</p><h2>From the journal</h2></div><span className="issue-count">{String(posts.length).padStart(2, '0')} entries</span></div>
           {loading ? <div className="loading-state">Gathering the latest notes...</div> : errorMessage ? <div className="loading-state">{errorMessage}</div> : featured ? <>
-            <article className="featured-post" onClick={() => setSelectedPost(featured)}><div className="featured-body"><div className="featured-label">Editor's pick <span>01</span></div><div className="post-meta"><span>{featured.category}</span><span>{formatDate(featured.createdAt)} · {formatTime(featured.createdAt)}</span></div><h3>{featured.title}</h3><p>{featured.excerpt}</p><div className="post-footer"><span>By {featured.author}</span><span className="read-more">Tap to read <ArrowUpRight size={15} /></span></div></div></article>
+            <article className="featured-post" tabIndex="0" role="button" onClick={() => setSelectedPost(featured)} onKeyDown={(event) => { if (event.key === 'Enter' || event.key === ' ') setSelectedPost(featured); }}><div className="featured-body"><div className="featured-label">Editor's pick <span>01</span></div><div className="post-meta"><span>{featured.category}</span><span>{formatDate(featured.createdAt)} · {formatTime(featured.createdAt)}</span></div><h3>{featured.title}</h3><p>{featured.excerpt}</p><div className="post-footer"><span>By {featured.author}</span><span className="read-more">Tap to read <ArrowUpRight size={15} /></span></div></div></article>
             <div className="post-grid">{latest.map((post, index) => <PostCard key={post._id} post={post} index={index + 2} onClick={() => setSelectedPost(post)} />)}</div>
           </> : <div className="loading-state">No entries yet. Open the writing desk to publish one.</div>}
         </section>
@@ -154,7 +170,7 @@ function PostCard({ post, index, onClick }) {
     event.currentTarget.style.setProperty('--tilt-y', `${(x * 2).toFixed(2)}deg`);
   };
   const resetTilt = (event) => { event.currentTarget.style.setProperty('--tilt-x', '0deg'); event.currentTarget.style.setProperty('--tilt-y', '0deg'); };
-  return <article className="post-card" onClick={onClick} onPointerMove={tiltCard} onPointerLeave={resetTilt} onPointerCancel={resetTilt}><div className="card-info"><div className="post-index">{String(index).padStart(2, '0')}</div><div className="post-meta"><span>{post.category}</span><span>{formatDate(post.createdAt)} · {formatTime(post.createdAt)}</span></div><h3>{post.title}</h3><p>{post.excerpt}</p><div className="card-bottom"><span>By {post.author} · {readingTime(post.content)}</span><span className="read-more">Tap to read <ArrowUpRight size={15} /></span></div></div></article>;
+  return <article className="post-card" tabIndex="0" role="button" onClick={onClick} onKeyDown={(event) => { if (event.key === 'Enter' || event.key === ' ') onClick(); }} onPointerMove={tiltCard} onPointerLeave={resetTilt} onPointerCancel={resetTilt}><div className="card-info"><div className="post-index">{String(index).padStart(2, '0')}</div><div className="post-meta"><span>{post.category}</span><span>{formatDate(post.createdAt)} · {formatTime(post.createdAt)}</span></div><h3>{post.title}</h3><p>{post.excerpt}</p><div className="card-bottom"><span>By {post.author} · {readingTime(post.content)}</span><span className="read-more">Tap to read <ArrowUpRight size={15} /></span></div></div></article>;
 }
 
 function PostModal({ post, onClose }) {
