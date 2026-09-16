@@ -1,6 +1,6 @@
 import { StrictMode, useEffect, useMemo, useState } from 'react';
 import { createRoot } from 'react-dom/client';
-import { ArrowUpRight, BookOpen, ChevronLeft, Clock3, Feather, LockKeyhole, Menu, PenLine, Pencil, Search, Trash2, X } from 'lucide-react';
+import { ArrowUpRight, BookOpen, ChevronLeft, Clock3, Feather, LockKeyhole, PenLine, Pencil, Trash2, X } from 'lucide-react';
 import './styles.css';
 
 const formatDate = (date) => new Intl.DateTimeFormat('en-US', { month: 'short', day: 'numeric', year: 'numeric' }).format(new Date(date));
@@ -38,8 +38,8 @@ function App() {
     <div className="app-shell">
       <header className="site-header">
         <a className="brand" href="#top" onClick={() => setSelectedPost(null)}><span className="brand-mark"><Feather size={17} /></span><span>inkwell<span className="brand-dot">.</span></span></a>
-        <nav className="main-nav"><a href="#journal">Journal</a><a href="#about">About</a><a href="#newsletter">Stay awhile</a></nav>
-        <div className="header-actions"><button className="icon-button" aria-label="Search"><Search size={18} /></button><button className="admin-button" onClick={() => setShowAdmin(true)}><PenLine size={15} /> Write a post</button><button className="menu-button" aria-label="Open menu"><Menu size={20} /></button></div>
+        <nav className="main-nav"><a href="#journal">Journal</a><a href="#about">About</a></nav>
+        <div className="header-actions"><button className="admin-button" onClick={() => setShowAdmin(true)}><PenLine size={15} /> Write a post</button></div>
       </header>
 
       <main id="top">
@@ -57,7 +57,6 @@ function App() {
         </section>
 
         <section className="manifesto" id="about"><div className="manifesto-mark"><BookOpen size={27} strokeWidth={1.5} /></div><div><p className="eyebrow">A note from Rohit</p><h2>Honest thoughts,<br /><em>shared respectfully.</em></h2></div><p className="manifesto-copy">I am here to share my point of view, my experiences, and the thoughts that stay with me. My writing may be direct and personal, but the purpose is never to hurt anyone. Please read it as my perspective, not a personal attack, and do not take it personally.</p></section>
-        <section className="newsletter" id="newsletter"><div><p className="eyebrow">Stay connected</p><h2>More thoughts<br /><em>from Rohit.</em></h2></div><form onSubmit={(event) => event.preventDefault()}><label htmlFor="email">Your email address</label><div className="email-row"><input id="email" type="email" placeholder="you@example.com" required /><button type="submit">Subscribe <ArrowUpRight size={16} /></button></div><small>Occasional notes from my journal. Unsubscribe anytime.</small></form></section>
       </main>
 
       <footer className="site-footer"><div className="brand footer-brand"><span className="brand-mark"><Feather size={17} /></span><span>Rohit's journal<span className="brand-dot">.</span></span></div><span>Thoughts, honestly shared.</span><span>© 2026 Rohit</span></footer>
