@@ -67,7 +67,8 @@ function App() {
 
   useEffect(() => {
     const sessionKey = 'rj-flex-visit-counted';
-    const method = sessionStorage.getItem(sessionKey) ? 'GET' : 'POST';
+    const adminExempt = sessionStorage.getItem('rj-flex-admin-exempt') === 'true';
+    const method = adminExempt || sessionStorage.getItem(sessionKey) ? 'GET' : 'POST';
     if (method === 'POST') sessionStorage.setItem(sessionKey, 'true');
     const fetchVisits = (requestMethod = 'GET') => fetch(apiUrl('/api/visits'), { method: requestMethod })
       .then((response) => response.json())
@@ -215,6 +216,17 @@ function AdminModal({ posts, onClose, onSaved, onDeleted }) {
       const data = await response.json();
       if (!response.ok) throw new Error(data.message);
       localStorage.setItem('inkwell_admin_token', data.token);
+      if (sessionStorage.getItem('rj-flex-visit-counted')) {
+        const exemptResponse = await fetch(apiUrl('/api/visits/admin-exempt'), { method: 'POST', headers: { Authorization: `Bearer ${data.token}` } });
+        if (exemptResponse.ok) {
+          const exemptData = await exemptResponse.json();
+          setVisitCount(exemptData.total);
+          sessionStorage.removeItem('rj-flex-visit-counted');
+          sessionStorage.setItem('rj-flex-admin-exempt', 'true');
+        }
+      } else {
+        sessionStorage.setItem('rj-flex-admin-exempt', 'true');
+      }
       setAuthenticated(true);
       setLoginPassword('');
     } catch (loginError) {

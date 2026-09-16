@@ -97,6 +97,20 @@ app.post('/api/visits', async (_req, res) => {
   }
 });
 
+app.post('/api/visits/admin-exempt', requireAuth, async (_req, res) => {
+  try {
+    if (useDatabase) {
+      await VisitCounter.updateOne({ key: 'site', total: { $gt: 0 } }, { $inc: { total: -1 } });
+      const counter = await VisitCounter.findOne({ key: 'site' }).lean();
+      return res.json({ total: counter?.total || 0 });
+    }
+    memoryVisits = Math.max(0, memoryVisits - 1);
+    res.json({ total: memoryVisits });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+
 app.post('/api/auth/login', (req, res) => {
   const { password } = req.body;
   if (!password || password !== (process.env.ADMIN_PASSWORD || 'journalist')) {
