@@ -4,6 +4,7 @@ import express from 'express';
 import jwt from 'jsonwebtoken';
 import mongoose from 'mongoose';
 import { Post } from './models/Post.js';
+import { VisitCounter } from './models/VisitCounter.js';
 
 const app = express();
 const port = process.env.PORT || 5000;
@@ -43,6 +44,7 @@ const memoryPosts = [
   }
 ];
 let useDatabase = false;
+let memoryVisits = 0;
 
 app.use(cors({
   origin: (origin, callback) => {
@@ -74,6 +76,26 @@ const requireAuth = (req, res, next) => {
 };
 
 app.get('/api/health', (_req, res) => res.json({ status: 'ok', database: useDatabase ? 'mongodb' : 'memory' }));
+
+app.get('/api/visits', async (_req, res) => {
+  try {
+    const total = useDatabase ? (await VisitCounter.findOne({ key: 'site' }).lean())?.total || 0 : memoryVisits;
+    res.json({ total });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+
+app.post('/api/visits', async (_req, res) => {
+  try {
+    const counter = useDatabase
+      ? await VisitCounter.findOneAndUpdate({ key: 'site' }, { $inc: { total: 1 } }, { new: true, upsert: true, setDefaultsOnInsert: true }).lean()
+      : { total: ++memoryVisits };
+    res.json({ total: counter.total });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
 
 app.post('/api/auth/login', (req, res) => {
   const { password } = req.body;

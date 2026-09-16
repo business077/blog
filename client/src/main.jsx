@@ -19,6 +19,7 @@ function App() {
   const [showAdmin, setShowAdmin] = useState(false);
   const [loading, setLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState('');
+  const [visitCount, setVisitCount] = useState(null);
   const pageRef = useRef(null);
   const heroArtRef = useRef(null);
 
@@ -56,6 +57,18 @@ function App() {
   };
 
   useEffect(() => { loadPosts(); }, []);
+
+  useEffect(() => {
+    const sessionKey = 'rj-flex-visit-counted';
+    const method = sessionStorage.getItem(sessionKey) ? 'GET' : 'POST';
+    if (method === 'POST') sessionStorage.setItem(sessionKey, 'true');
+    const fetchVisits = (requestMethod = 'GET') => fetch(apiUrl('/api/visits'), { method: requestMethod })
+      .then((response) => response.json())
+      .then((data) => setVisitCount(data.total));
+    fetchVisits(method).catch(() => { if (method === 'POST') sessionStorage.removeItem(sessionKey); });
+    const refreshTimer = window.setInterval(() => fetchVisits().catch(() => {}), 15000);
+    return () => window.clearInterval(refreshTimer);
+  }, []);
 
   useEffect(() => {
     if (loading || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return undefined;
@@ -112,7 +125,7 @@ function App() {
       <header className="site-header">
         <a className="brand" href="#top" onClick={() => setSelectedPost(null)}><span className="brand-mark"><Feather size={17} /></span><span>RJ Flex<span className="brand-dot">.</span></span></a>
         <nav className="main-nav"><a href="#journal">Journal</a><a href="#about">About</a></nav>
-        <div className="header-actions"><button className="admin-button" onClick={() => setShowAdmin(true)}><PenLine size={15} /> Write a post</button></div>
+        <div className="header-actions"><div className="visit-counter" title="Total site visits"><span></span><strong>{visitCount === null ? '—' : visitCount.toLocaleString()}</strong><small>visits</small></div><button className="admin-button" onClick={() => setShowAdmin(true)}><PenLine size={15} /> Write a post</button></div>
       </header>
 
       <main id="top">
