@@ -12,6 +12,11 @@ const allowedOrigins = (process.env.CLIENT_URL || 'http://localhost:5173')
   .split(',')
   .map((origin) => origin.trim().replace(/\/$/, ''))
   .filter(Boolean);
+const isAllowedOrigin = (origin) => {
+  const normalizedOrigin = origin.replace(/\/$/, '');
+  return allowedOrigins.includes(normalizedOrigin)
+    || /^https:\/\/[a-z0-9-]+-business077\.vercel\.app$/i.test(normalizedOrigin);
+};
 if (process.env.NODE_ENV === 'production' && !process.env.JWT_SECRET) {
   throw new Error('JWT_SECRET must be set in production.');
 }
@@ -41,7 +46,7 @@ let useDatabase = false;
 
 app.use(cors({
   origin: (origin, callback) => {
-    if (!origin || allowedOrigins.includes(origin.replace(/\/$/, ''))) return callback(null, true);
+    if (!origin || isAllowedOrigin(origin)) return callback(null, true);
     callback(new Error(`CORS blocked origin: ${origin}`));
   }
 }));

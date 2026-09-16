@@ -13,4 +13,16 @@ MongoDB is optional for a quick preview. Without a reachable database, the API u
 
 ## Deployment
 
-Deploy the `server` as a Node service and the `client` as a Vite static site. Set `CLIENT_URL` to the deployed client URL and set the client build variable `VITE_API_URL` to the deployed API URL. MongoDB Atlas provides the production `MONGODB_URI`.
+This repository includes deployment configuration for both platforms:
+
+- `render.yaml` configures the Node API with `autoDeploy: true`.
+- `client/vercel.json` configures the Vite SPA build and routing.
+
+One-time setup:
+
+1. In Render, create a Blueprint from this repository and add the secret values requested by `render.yaml`.
+2. In Vercel, import this repository, set the root directory to `client`, and enable Git integration. Add `VITE_API_URL=https://your-render-service.onrender.com`.
+3. In Render, set `CLIENT_URL=https://your-vercel-app.vercel.app`. You can provide multiple origins separated by commas for custom domains or preview URLs.
+4. Enable automatic deployments in both dashboards. After that, pushes to the connected branch automatically deploy the backend and frontend.
+
+MongoDB Atlas provides the production `MONGODB_URI`. Vercel preview URLs matching the project deployment pattern are accepted by the API; use `CLIENT_URL` for custom domains.
