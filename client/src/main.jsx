@@ -7,19 +7,23 @@ const formatDate = (date) => new Intl.DateTimeFormat('en-US', { month: 'short', 
 const formatTime = (date) => new Intl.DateTimeFormat('en-US', { hour: 'numeric', minute: '2-digit' }).format(new Date(date));
 const readingTime = (content = '') => `${Math.max(1, Math.ceil(content.trim().split(/\s+/).length / 220))} min read`;
 const newestFirst = (items) => [...items].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
-const apiUrl = (path) => `${import.meta.env.VITE_API_URL || ''}${path}`;
+const apiUrl = (path) => `${(import.meta.env.VITE_API_URL || '').replace(/\/$/, '')}${path}`;
 
 function App() {
   const [posts, setPosts] = useState([]);
   const [selectedPost, setSelectedPost] = useState(null);
   const [showAdmin, setShowAdmin] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [errorMessage, setErrorMessage] = useState('');
 
   const loadPosts = async () => {
     setLoading(true);
     try {
       const response = await fetch(apiUrl('/api/posts'));
+      if (!response.ok) throw new Error(`The blog API returned ${response.status}. Check VITE_API_URL.`);
       setPosts(newestFirst(await response.json()));
+    } catch (loadError) {
+      setErrorMessage(loadError.message);
     } finally {
       setLoading(false);
     }
@@ -46,7 +50,7 @@ function App() {
 
         <section className="journal-section" id="journal">
           <div className="section-heading"><div><p className="eyebrow">The latest</p><h2>From the journal</h2></div><span className="issue-count">{String(posts.length).padStart(2, '0')} entries</span></div>
-          {loading ? <div className="loading-state">Gathering the latest notes...</div> : featured ? <>
+          {loading ? <div className="loading-state">Gathering the latest notes...</div> : errorMessage ? <div className="loading-state">{errorMessage}</div> : featured ? <>
             <article className="featured-post" onClick={() => setSelectedPost(featured)}><div className="featured-image"><div className="image-number">01</div><div className="image-shape"></div><span>Editor's pick</span></div><div className="featured-body"><div className="post-meta"><span>{featured.category}</span><span>{formatDate(featured.createdAt)} · {formatTime(featured.createdAt)}</span></div><h3>{featured.title}</h3><p>{featured.excerpt}</p><div className="post-footer"><span>By {featured.author}</span><span className="read-more">Read story <ArrowUpRight size={15} /></span></div></div></article>
             <div className="post-grid">{latest.map((post, index) => <PostCard key={post._id} post={post} index={index + 2} onClick={() => setSelectedPost(post)} />)}</div>
           </> : <div className="loading-state">No entries yet. Open the writing desk to publish one.</div>}
@@ -108,7 +112,9 @@ function AdminModal({ onClose, onPublished }) {
       if (!response.ok) throw new Error(data.message);
       onPublished(data);
     } catch (publishError) {
-      setError(publishError.message);
+      setError(publishError instanceof TypeError
+        ? `Cannot reach the blog API at ${apiUrl('/api/auth/login')}. Set VITE_API_URL in Vercel and redeploy.`
+        : publishError.message);
     } finally {
       setSaving(false);
     }

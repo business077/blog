@@ -8,6 +8,10 @@ import { Post } from './models/Post.js';
 const app = express();
 const port = process.env.PORT || 5000;
 const jwtSecret = process.env.JWT_SECRET || 'development-only-jwt-secret';
+const allowedOrigins = (process.env.CLIENT_URL || 'http://localhost:5173')
+  .split(',')
+  .map((origin) => origin.trim().replace(/\/$/, ''))
+  .filter(Boolean);
 if (process.env.NODE_ENV === 'production' && !process.env.JWT_SECRET) {
   throw new Error('JWT_SECRET must be set in production.');
 }
@@ -35,7 +39,12 @@ const memoryPosts = [
 ];
 let useDatabase = false;
 
-app.use(cors({ origin: process.env.CLIENT_URL || true }));
+app.use(cors({
+  origin: (origin, callback) => {
+    if (!origin || allowedOrigins.includes(origin.replace(/\/$/, ''))) return callback(null, true);
+    callback(new Error(`CORS blocked origin: ${origin}`));
+  }
+}));
 app.use(express.json());
 
 const sortNewest = (posts) => [...posts].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
