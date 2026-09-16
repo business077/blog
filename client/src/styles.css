@@ -154,3 +154,30 @@ body::after { content: ''; position: fixed; z-index: -1; inset: 0; pointer-event
 @keyframes orbit-spin-two { to { transform: rotateX(68deg) rotateZ(-382deg); } }
 @keyframes orbit-spin-three { to { transform: rotateX(72deg) rotateZ(394deg); } }
 @media (max-width: 800px) { .background-orbits { width: 125vw; height: 125vw; opacity: .48; } .orbit-core { width: 25px; height: 25px; } }
+.space-traffic { position: absolute; inset: 0; overflow: hidden; pointer-events: none; }
+.rocket { position: absolute; width: 54px; height: 16px; border-radius: 60% 42% 42% 60%; background: linear-gradient(90deg, #eafefa, #63f5df 62%, #ff8067); box-shadow: 0 0 18px rgba(99,245,223,.7); opacity: 0; }
+.rocket::before { content: ''; position: absolute; width: 15px; height: 15px; left: 8px; top: .5px; border: 2px solid #061014; border-radius: 50%; background: #b8fff3; }
+.rocket::after { content: ''; position: absolute; right: -26px; top: 5px; width: 29px; height: 6px; background: linear-gradient(90deg, #ffcf67, #ff8067, transparent); filter: blur(2px); clip-path: polygon(0 30%, 100% 0, 72% 50%, 100% 100%); }
+.rocket span, .rocket span::after { position: absolute; content: ''; background: var(--hot); width: 9px; height: 7px; bottom: -5px; border-radius: 0 0 3px 3px; }
+.rocket span { left: 21px; }.rocket span::after { left: 13px; bottom: 0; background: var(--accent); }
+.rocket-one { top: 22%; left: -90px; transform: rotate(-13deg); animation: rocket-cross-one 15s linear infinite; }
+.rocket-two { top: 67%; left: -90px; transform: scale(.62) rotate(-7deg); animation: rocket-cross-two 21s linear 5s infinite; }
+.satellite { position: absolute; width: 16px; height: 10px; border: 1px solid #c0a8ff; background: rgba(192,168,255,.35); opacity: .7; }
+.satellite::before, .satellite::after { content: ''; position: absolute; top: 1px; width: 14px; height: 7px; border: 1px solid #c0a8ff; background: rgba(99,245,223,.15); }.satellite::before { left: -17px; }.satellite::after { right: -17px; }
+.satellite span { position: absolute; width: 1px; height: 34px; left: 7px; top: 9px; background: #c0a8ff; transform: rotate(28deg); transform-origin: top; }
+.satellite-one { right: 13%; top: 28%; transform: rotate(-17deg); animation: satellite-drift 14s ease-in-out infinite; }
+.tiny-astronaut { position: absolute; z-index: 2; right: 10%; bottom: 17%; width: 46px; height: 77px; opacity: 0; animation: astronaut-visit 18s ease-in-out 4s infinite; filter: drop-shadow(0 0 11px rgba(99,245,223,.5)); }
+.astronaut-helmet { position: absolute; width: 31px; height: 29px; left: 7px; top: 0; border: 3px solid #e8fffc; border-radius: 48% 48% 42% 42%; background: linear-gradient(145deg, #c0fff5 0 19%, #1d5962 21% 70%, #061014 72%); }
+.astronaut-helmet::after { content: ''; position: absolute; width: 7px; height: 4px; left: 5px; top: 5px; border-radius: 50%; background: white; opacity: .8; }
+.astronaut-body { position: absolute; width: 28px; height: 34px; left: 9px; top: 27px; border: 2px solid #e8fffc; border-radius: 9px 9px 7px 7px; background: linear-gradient(90deg, #dffffa, #599aa0 65%, #14343d); }
+.astronaut-body::before { content: ''; position: absolute; width: 10px; height: 7px; left: 7px; top: 8px; border: 1px solid #061014; background: var(--hot); }
+.astronaut-pack { position: absolute; width: 8px; height: 25px; left: 4px; top: 32px; border: 1px solid #b8fff3; background: #214b53; border-radius: 3px; }
+.astronaut-boot { position: absolute; width: 11px; height: 16px; top: 58px; border: 2px solid #e8fffc; border-radius: 2px 2px 6px 6px; background: #46777e; }.boot-one { left: 9px; transform: rotate(8deg); }.boot-two { left: 26px; transform: rotate(-8deg); }
+.astronaut-bubble { position: absolute; right: 34px; top: -15px; width: 72px; padding: 6px 7px; border: 1px solid var(--accent); border-radius: 3px; color: var(--accent); background: rgba(6,16,20,.84); font: 8px 'DM Mono', monospace; letter-spacing: 1px; text-align: center; box-shadow: 0 0 16px rgba(99,245,223,.22); animation: bubble-pop 18s ease-in-out 4s infinite; }
+.astronaut-bubble::after { content: ''; position: absolute; right: -7px; bottom: 5px; width: 10px; height: 10px; border-right: 1px solid var(--accent); border-bottom: 1px solid var(--accent); transform: rotate(-45deg); background: rgba(6,16,20,.84); }
+@keyframes rocket-cross-one { 0% { left: -100px; opacity: 0; } 8% { opacity: .85; } 86% { opacity: .85; } 100% { left: calc(100% + 100px); opacity: 0; } }
+@keyframes rocket-cross-two { 0% { left: -100px; opacity: 0; } 10% { opacity: .7; } 88% { opacity: .7; } 100% { left: calc(100% + 100px); opacity: 0; } }
+@keyframes satellite-drift { 0%, 100% { transform: translate(0, 0) rotate(-17deg); } 50% { transform: translate(-55px, 28px) rotate(12deg); } }
+@keyframes astronaut-visit { 0%, 18% { opacity: 0; transform: translate(100px, 45px) rotate(12deg) scale(.5); } 28%, 60% { opacity: 1; transform: translate(0, 0) rotate(-4deg) scale(1); } 72%, 100% { opacity: 0; transform: translate(-90px, -50px) rotate(-20deg) scale(.55); } }
+@keyframes bubble-pop { 0%, 29% { opacity: 0; transform: scale(.4) translate(10px, 7px); } 34%, 60% { opacity: 1; transform: scale(1) translate(0, 0); } 68%, 100% { opacity: 0; transform: scale(.6) translate(5px, 3px); } }
+@media (max-width: 800px) { .rocket-one { animation-duration: 12s; }.rocket-two { animation-duration: 17s; }.tiny-astronaut { right: 5%; bottom: 22%; transform: scale(.78); }.satellite-one { right: 8%; } }
