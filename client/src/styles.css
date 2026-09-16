@@ -45,6 +45,8 @@
 .manage-actions button { display: grid; place-items: center; border: 1px solid var(--line); background: transparent; color: var(--ink); padding: 8px; }
 .manage-actions button:hover { border-color: var(--ink); background: var(--paper); }
 .manage-actions .delete-button { color: #a53f2b; }
+.admin-login-modal { max-width: 520px; }
+.login-copy { color: var(--muted); font-size: 14px; line-height: 1.7; margin: -8px 0 26px; }
 
 /* Futuristic motion layer. */
 .journal-section { background: rgba(11, 26, 32, .9); border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); }

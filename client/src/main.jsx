@@ -142,7 +142,7 @@ function App() {
       <header className="site-header">
         <a className="brand" href="#top" onClick={(event) => { event.preventDefault(); setSelectedPost(null); window.scrollTo({ top: 0, behavior: 'smooth' }); }}><span className="brand-mark"><Feather size={17} /></span><span>RJ Flex<span className="brand-dot">.</span></span></a>
         <nav className="main-nav"><a href="#journal">Journal</a><a href="#about">About</a></nav>
-        <div className="header-actions"><div className="visit-counter" title="Total site visits"><span></span><strong>{visitCount === null ? '—' : visitCount.toLocaleString()}</strong><small>visits</small></div><button className="admin-button" onClick={() => setShowAdmin(true)}><PenLine size={15} /> Write a post</button></div>
+        <div className="header-actions"><div className="visit-counter" title="Total site visits"><span></span><strong>{visitCount === null ? '—' : visitCount.toLocaleString()}</strong><small>visits</small></div><button className="admin-button" onClick={() => setShowAdmin(true)}><LockKeyhole size={15} /> Admin login</button></div>
       </header>
 
       <main id="top">
@@ -203,7 +203,24 @@ function AdminModal({ posts, onClose, onSaved, onDeleted }) {
   const [editingId, setEditingId] = useState(null);
   const [error, setError] = useState('');
   const [saving, setSaving] = useState(false);
+  const [authenticated, setAuthenticated] = useState(false);
+  const [loginPassword, setLoginPassword] = useState('');
   const update = (key) => (event) => setForm({ ...form, [key]: event.target.value });
+  const login = async (event) => {
+    event.preventDefault();
+    setSaving(true);
+    setError('');
+    try {
+      const response = await fetch(apiUrl('/api/auth/login'), { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ password: loginPassword }) });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.message);
+      localStorage.setItem('inkwell_admin_token', data.token);
+      setAuthenticated(true);
+      setLoginPassword('');
+    } catch (loginError) {
+      setError(loginError instanceof TypeError ? `Cannot reach the blog API at ${apiUrl('/api/auth/login')}. Check VITE_API_URL.` : loginError.message);
+    } finally { setSaving(false); }
+  };
   const getToken = async () => {
     let token = localStorage.getItem('inkwell_admin_token');
     if (token) return token;
@@ -245,6 +262,7 @@ function AdminModal({ posts, onClose, onSaved, onDeleted }) {
       if (editingId === post._id) resetForm();
     } catch (deleteError) { setError(deleteError.message); } finally { setSaving(false); }
   };
+  if (!authenticated) return <div className="modal-backdrop" onMouseDown={onClose}><section className="admin-modal admin-login-modal" onMouseDown={(event) => event.stopPropagation()}><div className="admin-header"><div><p className="eyebrow">Private access</p><h2>Admin login</h2></div><button className="close-button" onClick={onClose} aria-label="Close"><X size={19} /></button></div><p className="login-copy">Sign in to publish, edit, or delete posts.</p><form onSubmit={login}><label>Password<div className="input-with-icon"><LockKeyhole size={15} /><input autoFocus type="password" value={loginPassword} onChange={(event) => setLoginPassword(event.target.value)} placeholder="Enter admin password" required /></div></label>{error && <p className="form-error">{error}</p>}<button className="publish-button" disabled={saving}>{saving ? 'Signing in...' : 'Continue to writing desk'} <ArrowUpRight size={16} /></button></form></section></div>;
   return <div className="modal-backdrop" onMouseDown={onClose}><section className="admin-modal" onMouseDown={(event) => event.stopPropagation()}><div className="admin-header"><div><p className="eyebrow">The writing desk</p><h2>{editingId ? 'Edit post' : 'Publish a new post'}</h2></div><button className="close-button" onClick={onClose} aria-label="Close"><X size={19} /></button></div><form onSubmit={savePost}><label>Admin password<div className="input-with-icon"><LockKeyhole size={15} /><input type="password" value={form.password} onChange={update('password')} placeholder={editingId ? 'Saved session or enter password' : 'Enter password'} /></div></label><div className="form-split"><label>Category<input value={form.category} onChange={update('category')} /></label><label>Author<input value={form.author} onChange={update('author')} /></label></div><label>Title<input value={form.title} onChange={update('title')} placeholder="A title worth keeping" required /></label><label>Short excerpt<textarea value={form.excerpt} onChange={update('excerpt')} rows="2" placeholder="A sentence to draw readers in" required /></label><label>Post content<textarea className="content-input" value={form.content} onChange={update('content')} rows="8" placeholder="Write your story here..." required /></label>{error && <p className="form-error">{error}</p>}<div className="admin-form-actions"><button className="publish-button" disabled={saving}>{saving ? 'Saving...' : editingId ? 'Save changes' : 'Publish to RJ Flex'} <ArrowUpRight size={16} /></button>{editingId && <button type="button" className="cancel-button" onClick={resetForm}>Cancel edit</button>}</div></form><div className="manage-posts"><div className="manage-heading"><p className="eyebrow">Manage posts</p><span>{posts.length} total</span></div>{posts.map((post) => <div className="manage-row" key={post._id}><div><strong>{post.title}</strong><small>{formatDate(post.createdAt)}</small></div><div className="manage-actions"><button type="button" onClick={() => editPost(post)} aria-label={`Edit ${post.title}`} title="Edit post"><Pencil size={15} /></button><button type="button" className="delete-button" onClick={() => deletePost(post)} aria-label={`Delete ${post.title}`} title="Delete post"><Trash2 size={15} /></button></div></div>)}</div></section></div>;
 }
 
