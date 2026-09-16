@@ -32,6 +32,11 @@ function App() {
     heroArtRef.current?.style.setProperty('--pointer-y', '0');
   };
 
+  const trackPagePointer = (event) => {
+    document.documentElement.style.setProperty('--cursor-x', `${(event.clientX / window.innerWidth).toFixed(3)}`);
+    document.documentElement.style.setProperty('--cursor-y', `${(event.clientY / window.innerHeight).toFixed(3)}`);
+  };
+
   const loadPosts = async () => {
     setLoading(true);
     try {
@@ -51,7 +56,7 @@ function App() {
   const latest = useMemo(() => posts.slice(1), [posts]);
 
   return (
-    <div className="app-shell">
+    <div className="app-shell" onPointerMove={trackPagePointer}>
       <header className="site-header">
         <a className="brand" href="#top" onClick={() => setSelectedPost(null)}><span className="brand-mark"><Feather size={17} /></span><span>RJ Flex<span className="brand-dot">.</span></span></a>
         <nav className="main-nav"><a href="#journal">Journal</a><a href="#about">About</a></nav>
@@ -61,7 +66,7 @@ function App() {
       <main id="top">
         <section className="hero-section">
           <div className="hero-copy"><p className="eyebrow">Rohit's personal journal</p><h1>Thoughts,<br /><em>without filters.</em></h1><p className="hero-intro">Hi, I am Rohit. This is where I share my thoughts, opinions, and everyday observations with as few filters as possible.</p><a className="text-link" href="#journal">Read my latest thoughts <ArrowUpRight size={16} /></a></div>
-          <div className="hero-art" ref={heroArtRef} onPointerMove={moveHeroArt} onPointerLeave={resetHeroArt} onPointerCancel={resetHeroArt}><div className="art-sun"></div><div className="art-line line-one"></div><div className="art-line line-two"></div><div className="art-label">vol. 01 <span>·</span> 2026</div><div className="art-caption">Move through<br />the margins</div></div>
+          <div className="hero-art" ref={heroArtRef} onPointerMove={moveHeroArt} onPointerLeave={resetHeroArt} onPointerCancel={resetHeroArt}><div className="signal-particles"><i></i><i></i><i></i><i></i><i></i><i></i></div><div className="art-sun"></div><div className="art-line line-one"></div><div className="art-line line-two"></div><div className="art-label">vol. 01 <span>·</span> 2026</div><div className="art-caption">Move through<br />the margins</div></div>
         </section>
 
         <section className="journal-section" id="journal">
