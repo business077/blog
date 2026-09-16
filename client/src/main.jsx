@@ -2,7 +2,7 @@ import { StrictMode, useEffect, useMemo, useRef, useState } from 'react';
 import { createRoot } from 'react-dom/client';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
-import { ArrowUpRight, BookOpen, ChevronLeft, Clock3, Feather, LockKeyhole, PenLine, Pencil, Trash2, X } from 'lucide-react';
+import { ArrowUpRight, BookOpen, ChevronLeft, Clock3, Feather, LockKeyhole, MessageCircle, PenLine, Pencil, Trash2, X } from 'lucide-react';
 import './styles.css';
 
 gsap.registerPlugin(ScrollTrigger);
@@ -152,6 +152,7 @@ function App() {
         </section>
 
         <section className="manifesto" id="about"><div className="manifesto-mark"><BookOpen size={27} strokeWidth={1.5} /></div><div><p className="eyebrow">A note from Rohit</p><h2>Honest thoughts,<br /><em>shared respectfully.</em></h2></div><p className="manifesto-copy">I am here to share my point of view, my experiences, and the thoughts that stay with me. My writing may be direct and personal, but the purpose is never to hurt anyone. Please read it as my perspective, not a personal attack, and do not take it personally.</p></section>
+        <AskQuestion />
       </main>
 
       <footer className="site-footer"><div className="brand footer-brand"><span className="brand-mark"><Feather size={17} /></span><span>RJ Flex<span className="brand-dot">.</span></span></div><span>Thoughts, honestly shared.</span><span>© 2026 Rohit</span></footer>
@@ -189,6 +190,27 @@ function PostModal({ post, onClose }) {
   return <div className="modal-backdrop" onMouseDown={onClose}><article className="post-modal" ref={modalRef} onMouseDown={(event) => event.stopPropagation()}><div className="reading-progress"><span style={{ width: `${progress}%` }}></span></div><button className="close-button" onClick={onClose} aria-label="Close"><X size={19} /></button><div className="modal-kicker">{post.category} <span>·</span> {formatDate(post.createdAt)} at {formatTime(post.createdAt)}</div><h2>{post.title}</h2><p className="modal-excerpt">{post.excerpt}</p><div className="modal-byline">By {post.author} <span>·</span> {readingTime(post.content)}</div><div className="modal-content">{post.content.split('\n').map((paragraph, index) => paragraph && <p key={index}>{paragraph}</p>)}</div><button className="back-link" onClick={onClose}><ChevronLeft size={16} /> Back to journal</button></article></div>;
 }
 
+function AskQuestion() {
+  const [message, setMessage] = useState('');
+  const [status, setStatus] = useState('');
+  const [sending, setSending] = useState(false);
+  const submit = async (event) => {
+    event.preventDefault();
+    setSending(true);
+    setStatus('');
+    try {
+      const response = await fetch(apiUrl('/api/questions'), { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ message }) });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.message);
+      setMessage('');
+      setStatus(data.message);
+    } catch (error) {
+      setStatus(error instanceof TypeError ? 'The message could not reach the blog API.' : error.message);
+    } finally { setSending(false); }
+  };
+  return <section className="question-section" id="ask"><div className="question-heading"><MessageCircle size={25} /><div><p className="eyebrow">A quiet channel</p><h2>Ask me anything.<br /><em>Stay anonymous.</em></h2></div></div><p className="question-copy">Leave a question, thought, or point of view. I will be the only one who can see it.</p><form className="question-form" onSubmit={submit}><textarea value={message} onChange={(event) => setMessage(event.target.value)} maxLength="2000" rows="4" placeholder="Write your message here..." required /><div className="question-actions"><span>{message.length}/2000 · No name or email required</span><button className="publish-button" disabled={sending}>{sending ? 'Sending...' : 'Send anonymously'} <ArrowUpRight size={16} /></button></div>{status && <p className="question-status">{status}</p>}</form></section>;
+}
+
 function AdminModal({ posts, onClose, onVisitCountChange, onSaved, onDeleted }) {
   const emptyForm = { password: '', title: '', excerpt: '', content: '', category: 'Field Notes', author: 'Rohit' };
   const [form, setForm] = useState(emptyForm);
@@ -197,6 +219,7 @@ function AdminModal({ posts, onClose, onVisitCountChange, onSaved, onDeleted }) 
   const [saving, setSaving] = useState(false);
   const [authenticated, setAuthenticated] = useState(false);
   const [loginPassword, setLoginPassword] = useState('');
+  const [questions, setQuestions] = useState([]);
   const update = (key) => (event) => setForm({ ...form, [key]: event.target.value });
   const login = async (event) => {
     event.preventDefault();
@@ -219,6 +242,8 @@ function AdminModal({ posts, onClose, onVisitCountChange, onSaved, onDeleted }) 
         sessionStorage.setItem('rj-flex-admin-exempt', 'true');
       }
       setAuthenticated(true);
+      const questionResponse = await fetch(apiUrl('/api/questions'), { headers: { Authorization: `Bearer ${data.token}` } });
+      if (questionResponse.ok) setQuestions(await questionResponse.json());
       setLoginPassword('');
     } catch (loginError) {
       setError(loginError instanceof TypeError ? `Cannot reach the blog API at ${apiUrl('/api/auth/login')}. Check VITE_API_URL.` : loginError.message);
@@ -266,7 +291,7 @@ function AdminModal({ posts, onClose, onVisitCountChange, onSaved, onDeleted }) 
     } catch (deleteError) { setError(deleteError.message); } finally { setSaving(false); }
   };
   if (!authenticated) return <div className="modal-backdrop" onMouseDown={onClose}><section className="admin-modal admin-login-modal" onMouseDown={(event) => event.stopPropagation()}><div className="admin-header"><div><p className="eyebrow">Private access</p><h2>Admin login</h2></div><button className="close-button" onClick={onClose} aria-label="Close"><X size={19} /></button></div><p className="login-copy">Sign in to publish, edit, or delete posts.</p><form onSubmit={login}><label>Password<div className="input-with-icon"><LockKeyhole size={15} /><input autoFocus type="password" value={loginPassword} onChange={(event) => setLoginPassword(event.target.value)} placeholder="Enter admin password" required /></div></label>{error && <p className="form-error">{error}</p>}<button className="publish-button" disabled={saving}>{saving ? 'Signing in...' : 'Continue to writing desk'} <ArrowUpRight size={16} /></button></form></section></div>;
-  return <div className="modal-backdrop" onMouseDown={onClose}><section className="admin-modal" onMouseDown={(event) => event.stopPropagation()}><div className="admin-header"><div><p className="eyebrow">The writing desk</p><h2>{editingId ? 'Edit post' : 'Publish a new post'}</h2></div><button className="close-button" onClick={onClose} aria-label="Close"><X size={19} /></button></div><form onSubmit={savePost}><label>Admin password<div className="input-with-icon"><LockKeyhole size={15} /><input type="password" value={form.password} onChange={update('password')} placeholder={editingId ? 'Saved session or enter password' : 'Enter password'} /></div></label><div className="form-split"><label>Category<input value={form.category} onChange={update('category')} /></label><label>Author<input value={form.author} onChange={update('author')} /></label></div><label>Title<input value={form.title} onChange={update('title')} placeholder="A title worth keeping" required /></label><label>Short excerpt<textarea value={form.excerpt} onChange={update('excerpt')} rows="2" placeholder="A sentence to draw readers in" required /></label><label>Post content<textarea className="content-input" value={form.content} onChange={update('content')} rows="8" placeholder="Write your story here..." required /></label>{error && <p className="form-error">{error}</p>}<div className="admin-form-actions"><button className="publish-button" disabled={saving}>{saving ? 'Saving...' : editingId ? 'Save changes' : 'Publish to RJ Flex'} <ArrowUpRight size={16} /></button>{editingId && <button type="button" className="cancel-button" onClick={resetForm}>Cancel edit</button>}</div></form><div className="manage-posts"><div className="manage-heading"><p className="eyebrow">Manage posts</p><span>{posts.length} total</span></div>{posts.map((post) => <div className="manage-row" key={post._id}><div><strong>{post.title}</strong><small>{formatDate(post.createdAt)}</small></div><div className="manage-actions"><button type="button" onClick={() => editPost(post)} aria-label={`Edit ${post.title}`} title="Edit post"><Pencil size={15} /></button><button type="button" className="delete-button" onClick={() => deletePost(post)} aria-label={`Delete ${post.title}`} title="Delete post"><Trash2 size={15} /></button></div></div>)}</div></section></div>;
+  return <div className="modal-backdrop" onMouseDown={onClose}><section className="admin-modal" onMouseDown={(event) => event.stopPropagation()}><div className="admin-header"><div><p className="eyebrow">The writing desk</p><h2>{editingId ? 'Edit post' : 'Publish a new post'}</h2></div><button className="close-button" onClick={onClose} aria-label="Close"><X size={19} /></button></div><form onSubmit={savePost}><label>Admin password<div className="input-with-icon"><LockKeyhole size={15} /><input type="password" value={form.password} onChange={update('password')} placeholder={editingId ? 'Saved session or enter password' : 'Enter password'} /></div></label><div className="form-split"><label>Category<input value={form.category} onChange={update('category')} /></label><label>Author<input value={form.author} onChange={update('author')} /></label></div><label>Title<input value={form.title} onChange={update('title')} placeholder="A title worth keeping" required /></label><label>Short excerpt<textarea value={form.excerpt} onChange={update('excerpt')} rows="2" placeholder="A sentence to draw readers in" required /></label><label>Post content<textarea className="content-input" value={form.content} onChange={update('content')} rows="8" placeholder="Write your story here..." required /></label>{error && <p className="form-error">{error}</p>}<div className="admin-form-actions"><button className="publish-button" disabled={saving}>{saving ? 'Saving...' : editingId ? 'Save changes' : 'Publish to RJ Flex'} <ArrowUpRight size={16} /></button>{editingId && <button type="button" className="cancel-button" onClick={resetForm}>Cancel edit</button>}</div></form><div className="manage-posts"><div className="manage-heading"><p className="eyebrow">Manage posts</p><span>{posts.length} total</span></div>{posts.map((post) => <div className="manage-row" key={post._id}><div><strong>{post.title}</strong><small>{formatDate(post.createdAt)}</small></div><div className="manage-actions"><button type="button" onClick={() => editPost(post)} aria-label={`Edit ${post.title}`} title="Edit post"><Pencil size={15} /></button><button type="button" className="delete-button" onClick={() => deletePost(post)} aria-label={`Delete ${post.title}`} title="Delete post"><Trash2 size={15} /></button></div></div>)}</div><div className="question-inbox"><div className="manage-heading"><p className="eyebrow">Anonymous inbox</p><span>{questions.length} messages</span></div>{questions.length ? questions.map((question) => <div className="question-row" key={question._id}><p>{question.message}</p><small>{formatDate(question.createdAt)} · {formatTime(question.createdAt)}</small></div>) : <p className="empty-inbox">No anonymous messages yet.</p>}</div></section></div>;
 }
 
 createRoot(document.getElementById('root')).render(<StrictMode><App /></StrictMode>);

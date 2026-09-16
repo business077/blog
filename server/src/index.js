@@ -5,6 +5,7 @@ import jwt from 'jsonwebtoken';
 import mongoose from 'mongoose';
 import { Post } from './models/Post.js';
 import { VisitCounter } from './models/VisitCounter.js';
+import { Question } from './models/Question.js';
 
 const app = express();
 const port = process.env.PORT || 5000;
@@ -45,6 +46,7 @@ const memoryPosts = [
 ];
 let useDatabase = false;
 let memoryVisits = 0;
+const memoryQuestions = [];
 
 app.use(cors({
   origin: (origin, callback) => {
@@ -106,6 +108,28 @@ app.post('/api/visits/admin-exempt', requireAuth, async (_req, res) => {
     }
     memoryVisits = Math.max(0, memoryVisits - 1);
     res.json({ total: memoryVisits });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+
+app.post('/api/questions', async (req, res) => {
+  const message = req.body.message?.trim();
+  if (!message) return res.status(400).json({ message: 'Please write a question or message.' });
+  if (message.length > 2000) return res.status(400).json({ message: 'Please keep your message under 2000 characters.' });
+  try {
+    const question = useDatabase ? await Question.create({ message }) : { _id: `memory-question-${Date.now()}`, message, createdAt: new Date().toISOString() };
+    if (!useDatabase) memoryQuestions.unshift(question);
+    res.status(201).json({ message: 'Your anonymous message has been sent.' });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+
+app.get('/api/questions', requireAuth, async (_req, res) => {
+  try {
+    const questions = useDatabase ? await Question.find().sort({ createdAt: -1 }).lean() : memoryQuestions;
+    res.json(questions);
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
