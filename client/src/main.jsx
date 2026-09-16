@@ -108,7 +108,7 @@ function App() {
 
   return (
     <div className="app-shell" ref={pageRef} onPointerMove={trackPagePointer}>
-      <div className="visual-atmosphere" aria-hidden="true"><div className="ambient-orb ambient-orb-a"></div><div className="ambient-orb ambient-orb-b"></div><div className="ambient-orb ambient-orb-c"></div><div className="ambient-ring"><div className="ambient-ring-inner"></div></div><div className="ambient-scan"></div><div className="ambient-stars">{Array.from({ length: 30 }, (_, index) => <i key={index}></i>)}</div></div>
+      <div className="visual-atmosphere" aria-hidden="true"><div className="ambient-orb ambient-orb-a"></div><div className="ambient-orb ambient-orb-b"></div><div className="ambient-orb ambient-orb-c"></div><div className="ambient-ring"><div className="ambient-ring-inner"></div></div><div className="background-orbits"><div className="orbit-core"></div><div className="orbit-path orbit-path-one"><i></i></div><div className="orbit-path orbit-path-two"><i></i></div><div className="orbit-path orbit-path-three"><i></i></div></div><div className="ambient-scan"></div><div className="ambient-stars">{Array.from({ length: 30 }, (_, index) => <i key={index}></i>)}</div></div>
       <header className="site-header">
         <a className="brand" href="#top" onClick={() => setSelectedPost(null)}><span className="brand-mark"><Feather size={17} /></span><span>RJ Flex<span className="brand-dot">.</span></span></a>
         <nav className="main-nav"><a href="#journal">Journal</a><a href="#about">About</a></nav>

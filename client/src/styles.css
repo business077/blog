@@ -138,3 +138,19 @@ body::after { content: ''; position: fixed; z-index: -1; inset: 0; pointer-event
 @keyframes atmosphere-spin { to { transform: rotate(360deg); } }
 @keyframes star-twinkle { 0%, 100% { opacity: .18; transform: scale(.7); } 50% { opacity: .9; transform: scale(1.8); } }
 @media (max-width: 800px) { .ambient-ring { width: 125vw; height: 125vw; margin: -62.5vw 0 0 -62.5vw; top: 40%; }.ambient-orb { opacity: .28; }.visual-atmosphere::after { background-size: 54px 54px; } }
+.background-orbits { position: absolute; width: min(78vw, 980px); height: min(78vw, 980px); left: 50%; top: 47%; transform: translate(-50%, -50%) rotate(-14deg); opacity: .65; filter: drop-shadow(0 0 12px rgba(99,245,223,.14)); }
+.orbit-core { position: absolute; width: 34px; height: 34px; left: 50%; top: 50%; transform: translate(-50%, -50%); border-radius: 50%; background: radial-gradient(circle at 35% 30%, #d5fff9, var(--accent) 22%, #0d5458 58%, transparent 72%); box-shadow: 0 0 20px var(--accent), 0 0 70px rgba(99,245,223,.35); animation: core-breathe 3.5s ease-in-out infinite; }
+.orbit-path { position: absolute; left: 50%; top: 50%; border: 1px solid rgba(99,245,223,.25); border-radius: 50%; transform-style: preserve-3d; }
+.orbit-path::before { content: ''; position: absolute; inset: 8%; border: 1px dashed rgba(99,245,223,.1); border-radius: 50%; }
+.orbit-path i { position: absolute; left: 50%; top: -5px; width: 9px; height: 9px; margin-left: -4px; border-radius: 50%; background: var(--accent); box-shadow: 0 0 16px 3px rgba(99,245,223,.7); }
+.orbit-path-one { width: 38%; height: 17%; margin: -8.5% 0 0 -19%; transform: rotateX(62deg) rotateZ(12deg); animation: orbit-spin-one 11s linear infinite; }
+.orbit-path-one i { background: #fff4c2; box-shadow: 0 0 14px 3px #ffcf67; }
+.orbit-path-two { width: 60%; height: 27%; margin: -13.5% 0 0 -30%; transform: rotateX(68deg) rotateZ(-22deg); animation: orbit-spin-two 17s linear infinite reverse; }
+.orbit-path-two i { width: 12px; height: 12px; top: auto; bottom: -6px; background: var(--hot); box-shadow: 0 0 17px 4px rgba(255,128,103,.7); }
+.orbit-path-three { width: 82%; height: 39%; margin: -19.5% 0 0 -41%; transform: rotateX(72deg) rotateZ(34deg); animation: orbit-spin-three 24s linear infinite; }
+.orbit-path-three i { width: 6px; height: 6px; background: #c0a8ff; box-shadow: 0 0 14px 3px rgba(192,168,255,.7); }
+@keyframes core-breathe { 0%, 100% { transform: translate(-50%, -50%) scale(.8); opacity: .7; } 50% { transform: translate(-50%, -50%) scale(1.25); opacity: 1; } }
+@keyframes orbit-spin-one { to { transform: rotateX(62deg) rotateZ(372deg); } }
+@keyframes orbit-spin-two { to { transform: rotateX(68deg) rotateZ(-382deg); } }
+@keyframes orbit-spin-three { to { transform: rotateX(72deg) rotateZ(394deg); } }
+@media (max-width: 800px) { .background-orbits { width: 125vw; height: 125vw; opacity: .48; } .orbit-core { width: 25px; height: 25px; } }
