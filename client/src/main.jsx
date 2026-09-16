@@ -1,4 +1,4 @@
-import { StrictMode, useEffect, useMemo, useState } from 'react';
+import { StrictMode, useEffect, useMemo, useRef, useState } from 'react';
 import { createRoot } from 'react-dom/client';
 import { ArrowUpRight, BookOpen, ChevronLeft, Clock3, Feather, LockKeyhole, PenLine, Pencil, Trash2, X } from 'lucide-react';
 import './styles.css';
@@ -15,6 +15,22 @@ function App() {
   const [showAdmin, setShowAdmin] = useState(false);
   const [loading, setLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState('');
+  const heroArtRef = useRef(null);
+
+  const moveHeroArt = (event) => {
+    const element = heroArtRef.current;
+    if (!element) return;
+    const bounds = element.getBoundingClientRect();
+    const x = ((event.clientX - bounds.left) / bounds.width - 0.5) * 2;
+    const y = ((event.clientY - bounds.top) / bounds.height - 0.5) * 2;
+    element.style.setProperty('--pointer-x', `${x.toFixed(3)}`);
+    element.style.setProperty('--pointer-y', `${y.toFixed(3)}`);
+  };
+
+  const resetHeroArt = () => {
+    heroArtRef.current?.style.setProperty('--pointer-x', '0');
+    heroArtRef.current?.style.setProperty('--pointer-y', '0');
+  };
 
   const loadPosts = async () => {
     setLoading(true);
@@ -45,7 +61,7 @@ function App() {
       <main id="top">
         <section className="hero-section">
           <div className="hero-copy"><p className="eyebrow">Rohit's personal journal</p><h1>Thoughts,<br /><em>without filters.</em></h1><p className="hero-intro">Hi, I am Rohit. This is where I share my thoughts, opinions, and everyday observations with as few filters as possible.</p><a className="text-link" href="#journal">Read my latest thoughts <ArrowUpRight size={16} /></a></div>
-          <div className="hero-art"><div className="art-sun"></div><div className="art-line line-one"></div><div className="art-line line-two"></div><div className="art-label">vol. 01 <span>·</span> 2026</div><div className="art-caption">Notes from<br />the margins</div></div>
+          <div className="hero-art" ref={heroArtRef} onPointerMove={moveHeroArt} onPointerLeave={resetHeroArt} onPointerCancel={resetHeroArt}><div className="art-sun"></div><div className="art-line line-one"></div><div className="art-line line-two"></div><div className="art-label">vol. 01 <span>·</span> 2026</div><div className="art-caption">Move through<br />the margins</div></div>
         </section>
 
         <section className="journal-section" id="journal">
