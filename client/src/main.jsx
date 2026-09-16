@@ -165,7 +165,7 @@ function App() {
 
       <footer className="site-footer"><div className="brand footer-brand"><span className="brand-mark"><Feather size={17} /></span><span>RJ Flex<span className="brand-dot">.</span></span></div><span>Thoughts, honestly shared.</span><span>© 2026 Rohit</span></footer>
       {selectedPost && <PostModal post={selectedPost} onClose={() => setSelectedPost(null)} />}
-      {showAdmin && <AdminModal posts={posts} onClose={() => setShowAdmin(false)} onSaved={(post, editing) => { setPosts((current) => newestFirst(editing ? current.map((item) => item._id === post._id ? post : item) : [post, ...current])); }} onDeleted={(postId) => { setPosts((current) => current.filter((post) => post._id !== postId)); }} />}
+      {showAdmin && <AdminModal posts={posts} onClose={() => setShowAdmin(false)} onVisitCountChange={setVisitCount} onSaved={(post, editing) => { setPosts((current) => newestFirst(editing ? current.map((item) => item._id === post._id ? post : item) : [post, ...current])); }} onDeleted={(postId) => { setPosts((current) => current.filter((post) => post._id !== postId)); }} />}
     </div>
   );
 }
@@ -198,7 +198,7 @@ function PostModal({ post, onClose }) {
   return <div className="modal-backdrop" onMouseDown={onClose}><article className="post-modal" ref={modalRef} onMouseDown={(event) => event.stopPropagation()}><div className="reading-progress"><span style={{ width: `${progress}%` }}></span></div><button className="close-button" onClick={onClose} aria-label="Close"><X size={19} /></button><div className="modal-kicker">{post.category} <span>·</span> {formatDate(post.createdAt)} at {formatTime(post.createdAt)}</div><h2>{post.title}</h2><p className="modal-excerpt">{post.excerpt}</p><div className="modal-byline">By {post.author} <span>·</span> {readingTime(post.content)}</div><div className="modal-content">{post.content.split('\n').map((paragraph, index) => paragraph && <p key={index}>{paragraph}</p>)}</div><button className="back-link" onClick={onClose}><ChevronLeft size={16} /> Back to journal</button></article></div>;
 }
 
-function AdminModal({ posts, onClose, onSaved, onDeleted }) {
+function AdminModal({ posts, onClose, onVisitCountChange, onSaved, onDeleted }) {
   const emptyForm = { password: '', title: '', excerpt: '', content: '', category: 'Field Notes', author: 'Rohit' };
   const [form, setForm] = useState(emptyForm);
   const [editingId, setEditingId] = useState(null);
@@ -220,7 +220,7 @@ function AdminModal({ posts, onClose, onSaved, onDeleted }) {
         const exemptResponse = await fetch(apiUrl('/api/visits/admin-exempt'), { method: 'POST', headers: { Authorization: `Bearer ${data.token}` } });
         if (exemptResponse.ok) {
           const exemptData = await exemptResponse.json();
-          setVisitCount(exemptData.total);
+          onVisitCountChange(exemptData.total);
           sessionStorage.removeItem('rj-flex-visit-counted');
           sessionStorage.setItem('rj-flex-admin-exempt', 'true');
         }
